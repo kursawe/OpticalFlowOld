@@ -48,9 +48,9 @@ for index in range(image.shape[0]):
 print(np.max(blurred_images))
 skimage.io.imsave('all_blurred.tif', blurred_images)
 
-#3.Produce subregions(boxsize 2*2)
-#4.Define image gradients Ix,Iy
-#5.Define error function
+#3.Produce subregions(boxsize 2*2) where there is at least one actin pre subregion
+#4.Define image gradients \nabla\mu, i.e. ux,uy
+#5.Define error function to correct the advection equation approximately
 #6.Define velocity(Vx,Vy)
 #7.Each box use Least Squares Minimization to minimize error function to find Vx,Vy
 #8.Initialize velocity field: set Vx=0.Vy=0,get the value of each gamma
