@@ -34,7 +34,14 @@ for index in range(1,blurred_images.shape[0]):
     #next, calculate dI/dx dI/dy
     current_frame = blurred_images[index]
     previous_frame = blurred_images[index -1]
-    dIdx = (current_frame[1:,:]  - current_frame[:-1,:])/delta_x # TODO: adjust this to include previous (or next?) time point
+    dIdx = (current_frame[1:,:] - current_frame[:-1,:])/delta_x # TODO: adjust this to include previous (or next?) time point
+    dIdx = (current_frame[1:,:] +previous_frame[1:,:] - current_frame[:-1,:]-previous_frame[:-1,:])/4delta_x
+    dIdy = (current_frame[:,1:] +previous_frame[:,1:] - current_frame[:,:-1]-previous_frame[:,:-1])/4delta_x
+    dIdt = ()
+    chi^2=
+    
+    
+    
     #3.Produce subregions(boxsize 2*2 or n by n) where there is at least one actin pre subregion
 #5.Define error function to correct the advection equation approximately (on each box and each frame)
 #6.Define velocity(Vx,Vy and gamma) equations, Each box use Least Squares Minimization to minimize error function 
