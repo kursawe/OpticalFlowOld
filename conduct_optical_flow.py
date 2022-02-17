@@ -9,7 +9,7 @@ smoothing_sigma = 9
 box_size = 3
 #outline for optical flow
 #1.Load data
-image = skimage.io.imread('MB301110_i_4_movie_8 bit.tif')
+all_images = skimage.io.imread('MB301110_i_4_movie_8 bit.tif')
 
 #2. For each frame, apply Gaussian blur,choose sigma(manully or by kernel size)
 #Using kernel size get sigma and blurred image(picture not moive)
@@ -27,6 +27,8 @@ for index in range(image.shape[0]):
 
 #save the file for double-checking
 skimage.io.imsave('all_blurred.tif', blurred_images)
+I = all_images[0,:,:]
+dIdx = np.zeros_like(I)
 
 for index in range(1,blurred_images.shape[0]):
     #4.Define image gradients \nabla\mu, i.e. ux,uy on each box and each frame
@@ -34,10 +36,13 @@ for index in range(1,blurred_images.shape[0]):
     #next, calculate dI/dx dI/dy
     current_frame = blurred_images[index]
     previous_frame = blurred_images[index -1]
-    dIdx = (current_frame[1:,:] - current_frame[:-1,:])/delta_x # TODO: adjust this to include previous (or next?) time point
-    dIdx = (current_frame[1:,:] +previous_frame[1:,:] - current_frame[:-1,:]-previous_frame[:-1,:])/4delta_x
-    dIdy = (current_frame[:,1:] +previous_frame[:,1:] - current_frame[:,:-1]-previous_frame[:,:-1])/4delta_x
-    dIdt = ()
+    # easier way: 
+    # TODO: use the correct equation here (i.e. combining averages from next frame and current frame
+    dIdx = (current_frame[2:,:] +previous_frame[2:,:] - current_frame[:-2,:]-previous_frame[:-2,:])/(4*delta_x)
+    dIdy = (current_frame[:,2:] +previous_frame[:,2:] - current_frame[:,:-2]-previous_frame[:,:-2])/(4*delta_x)
+    dIdt = current_frame-previous_frame
+    # at pixel i,j, content of the sum in the error function is
+    # dIdt
     chi^2=
     
     
