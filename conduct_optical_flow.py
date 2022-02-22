@@ -43,8 +43,23 @@ for index in range(1,blurred_images.shape[0]):
     dIdt = current_frame-previous_frame
     # at pixel i,j, content of the sum in the error function is
     # dIdt
-    chi^2=
-    
+    box_size =b
+    Nb = int((1024-2)/b)
+    #define sum
+def sum1:
+    for k in range(1, Nb)
+    sum += difference_to_previous_frame*dIdx
+    return sum
+def sum2:
+    for l in range(1, Nb)
+    sum += difference_to_previous_frame*dIdy
+    return sum
+    Vx =(-C*sum1+ B*sum2)/dIdt(AC-B^2)
+    #Is this right? should I follow this way and keep coding? 
+    #Do we need to define many sum functions? Since ABC all have sum symbol
+    A =
+    B =
+    C =
     
     
     #3.Produce subregions(boxsize 2*2 or n by n) where there is at least one actin pre subregion
