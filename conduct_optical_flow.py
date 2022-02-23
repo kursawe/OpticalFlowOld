@@ -30,12 +30,12 @@ skimage.io.imsave('all_blurred.tif', blurred_images)
 I = all_images[0,:,:]
 dIdx = np.zeros_like(I)
 
-for index in range(1,blurred_images.shape[0]):
+for frame_index in range(1,blurred_images.shape[0]):
     #4.Define image gradients \nabla\mu, i.e. ux,uy on each box and each frame
-    difference_to_previous_frame = blurred_images[index] - blurred_images[index -1]
+    difference_to_previous_frame = blurred_images[frame_index] - blurred_images[frame_index -1]
     #next, calculate dI/dx dI/dy
-    current_frame = blurred_images[index]
-    previous_frame = blurred_images[index -1]
+    current_frame = blurred_images[frame_index]
+    previous_frame = blurred_images[frame_index -1]
     # easier way: 
     # TODO: use the correct equation here (i.e. combining averages from next frame and current frame
     dIdx = (current_frame[2:,:] +previous_frame[2:,:] - current_frame[:-2,:]-previous_frame[:-2,:])/(4*delta_x)
@@ -45,21 +45,26 @@ for index in range(1,blurred_images.shape[0]):
     # dIdt
     box_size =b
     Nb = int((1024-2)/b)
-    #define sum
-def sum1:
-    for k in range(1, Nb)
-    sum += difference_to_previous_frame*dIdx
-    return sum
-def sum2:
-    for l in range(1, Nb)
-    sum += difference_to_previous_frame*dIdy
-    return sum
-    Vx =(-C*sum1+ B*sum2)/dIdt(AC-B^2)
-    #Is this right? should I follow this way and keep coding? 
-    #Do we need to define many sum functions? Since ABC all have sum symbol
-    A =
-    B =
-    C =
+    #initialise v_x as a matrix with one entry for each box
+    v_x = np.zeros((Nb,Nb))
+    #loop over box-counter in x-direction
+    for box_index_x in range(Nb):
+        #loop over box index in y direction
+        for box_index_y in range(Nb):
+            # These next two matrices are 'little' matrices, they are a restriction of the image to each box
+            # I hope I got the indexing right!
+            local_dIdt = dIdt[box_index_x*Nb:((box_index_x+1)*Nb),box_index_y*Nb:(((box_index_y+1)*Nb))]
+            local_dIdx = dIdx[box_index_x*Nb:((box_index_x+1)*Nb),box_index_y*Nb:(((box_index_y+1)*Nb))]
+            sum1 = np.sum(local_dIdt*local_dIdx)
+            sum2 = np.sum(local_dIdt*local_dIdy)
+            Vx =(-C*sum1+ B*sum2)/dIdt(AC-B^2)
+            #Is this right? should I follow this way and keep coding? 
+            #A: I think now it is kind of right? Except that A, B and C need to be defined before they are used
+            #Do we need to define many sum functions? Since ABC all have sum symbol
+            #A: I think we do, but I cannot be sure since I do not know the formula for A,B and C
+            A =
+            B =
+            C =
     
     
     #3.Produce subregions(boxsize 2*2 or n by n) where there is at least one actin pre subregion
