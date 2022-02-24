@@ -47,9 +47,11 @@ for frame_index in range(1,blurred_images.shape[0]):
     Nb = int((1024-2)/b)
     #initialise v_x as a matrix with one entry for each box
     v_x = np.zeros((Nb,Nb))
+    #set a framework to store each Vx
     #np.zeros:Return a new array of given shape and type, filled with zeros
     #loop over box-counter in x-direction
     for box_index_x in range(Nb):
+        #from0,...Nb-1
         #loop over box index in y direction
         for box_index_y in range(Nb):
             # These next two matrices are 'little' matrices, they are a restriction of the image to each box
@@ -63,9 +65,11 @@ for frame_index in range(1,blurred_images.shape[0]):
             A = np.sum((local_dIdx)**2)
             B = np.sum(local_dIdx*local_dIdy)
             C = np.sum((local_dIdy)**2)
-            Vx =(-C*sum1+ B*sum2)/local_dIdt(AC-B**2)
-            Vy =(-A*sum2+ B*sum1)/local_dIdt(AC-B**2)
+            Vx =(-C*sum1+ B*sum2)/(AC-B**2)
+            #Assume Delta t=1
+            Vy =(-A*sum2+ B*sum1)/(AC-B**2)
             v_x[box_index_x,box_index_y] = Vx
+            #store each Vx
             v_y[box_index_x,box_index_y] = Vy
             #Is this right? should I follow this way and keep coding? 
             #A: I think now it is kind of right? Except that A, B and C need to be defined before they are used
@@ -81,10 +85,10 @@ for frame_index in range(1,blurred_images.shape[0]):
     D = np.sum((local_dIdy)**2)
     E = np.sum(local_dIdy)
     sum3 = np.sum(difference_to_previous_frame)
-    Vx = [(local_dIdt*B*C*E**2-local_dIdt*B**2*E+local_dIdt*B*C*D-local_dIdt*C**2*D*E)*sum3+(local_dIdt*B*E**2-local_dIdt*C*E**3-local_dIdt*B*D+local_dIdt*C*D*E)*sum1+(-2*local_dIdt*B*C*E+local_dIdt*C**2*E+local_dIdt*B**2)*sum2]/(local_dIdt*(B-C*E)(2*local_dIdt*B*C*E-local_dIdt*C**2*E-C**2*d+C**2*E**2-local_dIdt*B**2+A*D-A*E**2)
-    Vy = [(A*E-C**2*E-local_dIdt*B*C+local_dIdt*C**2*E)*sum3+local_dIdt*(B-C*E)*sum1+(C**2-A)*sum2]/(2*local_dIdt**2*B*C*E-local_dIdt**2*C**2*E**2-local_dIdt*C**2*D+local_dIdt*C**2*E**2-local_dIdt**2*B**2+local_dIdt*A*D-local_dIdt*A*E**2)
+    Vx = [(B*C*E**2-B**2*E+B*C*D-C**2*D*E)*sum3+(B*E**2-C*E**3-B*D+C*D*E)*sum1+(-2*B*C*E+C**2*E+B**2)*sum2]/((B-C*E)(2*B*C*E-C**2*E-C**2*d+C**2*E**2-B**2+A*D-A*E**2)
+    Vy = [(A*E-C**2*E-B*C+C**2*E)*sum3+(B-C*E)*sum1+(C**2-A)*sum2]/(2*B*C*E-C**2*E**2-C**2*D+C**2*E**2-B**2+A*D-A*E**2)
     sum4 = np.sum(local_dIdx*Vx)
     sum5 = np.sum(local_dIdx*Vy)
-    Sum_gamma = (sum3+local_dIdt*sum4+local_dIdt*sum5)/local_dIdt
+    Sum_gamma = sum3+sum4+sum5
     #6.2 find Vx,Vy, gamma (for each box and each frame)
 #7. write out data (movies)
