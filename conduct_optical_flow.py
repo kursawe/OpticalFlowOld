@@ -3,6 +3,8 @@ import skimage.filters
 import matplotlib.pyplot as plt
 import PIL
 import numpy as np
+from matplotlib import pyplot
+from matplotlib.pyplot import imsave
 
 # define all important algorithm parameters
 smoothing_sigma = 9
@@ -20,10 +22,10 @@ all_images = skimage.io.imread('MB301110_i_4_movie_8 bit.tif')
 
 first_image = all_images[0,:,:]
 
-blurred_images = np.zeros_like(image, dtype ='double')
+blurred_images = np.zeros_like(all_images, dtype ='double')
 
-for index in range(image.shape[0]):
-    this_image = image[index,:,:]
+for index in range(all_images.shape[0]):
+    this_image = all_images[index,:,:]
     this_filtered_image = skimage.filters.gaussian(this_image, sigma =smoothing_sigma)
     blurred_images[index,:,:] = this_filtered_image
 
@@ -49,8 +51,8 @@ for frame_index in range(1,blurred_images.shape[0]):
     delta_I = current_frame-previous_frame
     # at pixel i,j, content of the sum in the error function is
     # dIdt
-    box_size =b
-    Nb = int((1024-2)/b)
+    box_size = b #The number of pixels in the subregion is b
+    Nb = int((1024-2)/b)#Number of boxes
     #initialise v_x as a matrix with one entry for each box
     v_x = all_vx[frame_index,:,:]
     #set a framework to store each Vx
@@ -78,11 +80,9 @@ for frame_index in range(1,blurred_images.shape[0]):
                 v_x[box_index_x,box_index_y] = Vx
                 #store each Vx
                 v_y[box_index_x,box_index_y] = Vy
+                skimage.io.imsave('Vx_velocity_only.tif', v_x[box_index_x,box_index_y])
+                skimage.io.imsave('Vy_velocity_only.tif', v_y[box_index_x,box_index_y])
             elif mode == 'include_gamma':
-                #Is this right? should I follow this way and keep coding? 
-                #A: I think now it is kind of right? Except that A, B and C need to be defined before they are used
-                #Do we need to define many sum functions? Since ABC all have sum symbol
-                #A: I think we do, but I cannot be sure since I do not know the formula for A,B and C 
                 #3.Produce subregions(boxsize 2*2 or n by n) where there is at least one actin pre subregion
                 #5.Define error function to correct the advection equation approximately (on each box and each frame)
                 #6.Define velocity(Vx,Vy and gamma) equations, Each box use Least Squares Minimization to minimize error function 
@@ -92,19 +92,29 @@ for frame_index in range(1,blurred_images.shape[0]):
                 C = np.sum(local_dIdx)
                 D = np.sum((local_dIdy)**2)
                 E = np.sum(local_dIdy)
-                sum3 = np.sum(local_delta_t)
-                Vx = ((B*C*E**2-B**2*E+B*C*D-C**2*D*E)*sum3+(B*E**2-C*E**3-B*D+C*D*E)*sum1+(-2*B*C*E+C**2*E+B**2)*sum2)/((B-C*E)(2*B*C*E-C**2*E-C**2*d+C**2*E**2-B**2+A*D-A*E**2))
-                Vy = ((A*E-C**2*E-B*C+C**2*E)*sum3+(B-C*E)*sum1+(C**2-A)*sum2)/(2*B*C*E-C**2*E**2-C**2*D+C**2*E**2-B**2+A*D-A*E**2)
+                sum3 = np.sum(local_delta_I)
+                Vx = ((E**2-b*D)*sum1+(b*B-C*E)*sum2+(C*D-B*E)*sum3)/(delta_t*(b*A*D-A*E**2-b*B**2-C**2*D+2*B*C*E))
+                Vy = ((b*B-C*E)*sum1+(C**2-b*A)*sum2+(A*E-B*C)*sum3)/(delta_t*(b*A*D-A*E**2-b*B**2-C**2*D+2*B*C*E))
                 v_x[box_index_x,box_index_y] = Vx
                 #store each Vx
                 v_y[box_index_x,box_index_y] = Vy
                 sum4 = np.sum(local_dIdx*Vx)
                 sum5 = np.sum(local_dIdx*Vy)
-                Sum_gamma = sum3+sum4+sum5
-                # add gamma
+                gamma = ((B*E-C*D)*sum1+(B*C-A*E)*sum2+(A*D-B**2)*sum3)/(delta_t*(b*A*D-A*E**2-b*B**2-C**2*D+2*B*C*E))
+                Gamma_[box_index_x,box_index_y] = Gamma
     #6.2 find Vx,Vy, gamma (for each box and each frame)
 #7. write out data (movies)
-
+skimage.io.imsave('Vx_include_gamma.tif', v_x[box_index_x,box_index_y])
+skimage.io.imsave('Vy_include_gamma.tif', v_y[box_index_x,box_index_y])
+skimage.io.imsave('Gamma_include_gamma.tif', Gamma_[box_index_x,box_index_y])
+if _name_ == 'Velocity_include_gamma':
+    plt.rc('font')
+    plt.rc('axes')
+    image = np.zeros((v_x[box_index_x,box_index_y],v_y[box_index_x,box_index_y]),)
+    Print (image)
+    plt.imshow(image)
+    plt.title('Velocity_include_gamma')
+    plt.show()
 
 # make some plots and movies
 # possible commands for this:
