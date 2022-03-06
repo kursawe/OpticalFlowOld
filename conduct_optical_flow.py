@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import PIL
 import numpy as np
 from matplotlib import pyplot
-from matplotlib.pyplot import imsave
+import celluloid
 
 # define all important algorithm parameters
 smoothing_sigma = 1
@@ -112,16 +112,41 @@ for frame_index in range(1,blurred_images.shape[0]):
 skimage.io.imsave('Vx_include_gamma.tif', all_v_x)
 skimage.io.imsave('Vy_include_gamma.tif', all_v_y)
 skimage.io.imsave('Gamma_include_gamma.tif', all_gamma)
-
 #Todo: make colourful movies
 #idea for visualising gamma: loop over all frames
 #in each frame
 # use plt.imshow to plot gamma
 # use celluloid to save this as a video
-
+all_time_values = np.linspace(0,10,100)
+x = np.linspace(0,20,101)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for t in all_time_values:
+    plt.plot(all_gamma,color='blue')
+    plt.xlable('x')
+    plt.ylable('Gamma')
+    animation_camera.snap()
+animation=animation_camera.animate()
+animation.save('Gamma_include_gamma.mp4')
 #make a separate figure like this for the velocities
+all_time_values = np.linspace(0,10,100)
+x = np.linspace(0,20,101)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for t in all_time_values:
+    plt.plot(all_gamma,color='blue')
+    plt.xlable('x')
+    plt.ylable('all_v_x')
+    animation_camera.snap()
+animation=animation_camera.animate()
+animation.save('all_v_x.mp4')
 
-# make some plots and movies
-# possible commands for this:
-# imsave same as above (especially useful for gamma!)
-# alternatively: need to find out how to use matplotlib to overlay arrows onto each box
+
+
+
+
+
+
+
+
+
