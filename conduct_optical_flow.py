@@ -117,17 +117,53 @@ skimage.io.imsave('Gamma_include_gamma.tif', all_gamma)
 #in each frame
 # use plt.imshow to plot gamma
 # use celluloid to save this as a video
+
 all_time_values = np.linspace(0,10,100)
 x = np.linspace(0,20,101)
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
+img_gamma = all_gamma[0,:,:]
+for t in all_time_values:  
+    plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.plot(x, img_gamma)
+    # plt.xlable('x')
+   # plt.ylable('Gamma')
+    animation_camera.snap()
+animation = animation_camera.animate()
+animation.save('Gamma_include_gamma.gif')
+animation.save('Gamma_include_gamma.mp4')#There is a error here:unknown file extension: .mp4
+
+
+#was tring to implement in this way, also, there are errors, I have fixed some, except this:AttributeError: 'numpy.ndarray' object has no attribute 'axes'
+import matplotlib.pyplot as plt
+from celluloid import Camera
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.pyplot import axes
+fig = plt.figure()
+img_gamma = all_gamma[0,:,:]
+camera = Camera(img_gamma)
+for i in range(83):
+    plt.plot(all_gamma[0,:,:])
+    camera.snap() 
+animation = camera.animate() 
+animation.save('Gamma_include_gamma.mp4')
+
+
+all_time_values = np.linspace(0,10,100)
+x = np.linspace(0,20,101)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+image_vx = all_v_x[0,;,;]
 for t in all_time_values:
-    plt.plot(all_gamma,color='blue')
-    plt.xlable('x')
-    plt.ylable('Gamma')
+    plt.imshow(image_vx, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
     animation_camera.snap()
 animation=animation_camera.animate()
-animation.save('Gamma_include_gamma.mp4')
+animation.save('all_v_x.gif')
+
+
+
+
+
 #make a separate figure like this for the velocities
 all_time_values = np.linspace(0,10,100)
 x = np.linspace(0,20,101)
@@ -140,8 +176,6 @@ for t in all_time_values:
     animation_camera.snap()
 animation=animation_camera.animate()
 animation.save('all_v_x.mp4')
-
-
 
 
 
