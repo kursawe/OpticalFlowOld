@@ -5,6 +5,8 @@ import PIL
 import numpy as np
 from matplotlib import pyplot
 import celluloid
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.animation as animation
 
 # define all important algorithm parameters
 smoothing_sigma = 1
@@ -112,29 +114,69 @@ for frame_index in range(1,blurred_images.shape[0]):
 skimage.io.imsave('Vx_include_gamma.tif', all_v_x)
 skimage.io.imsave('Vy_include_gamma.tif', all_v_y)
 skimage.io.imsave('Gamma_include_gamma.tif', all_gamma)
-#Todo: make colourful movies
-#idea for visualising gamma: loop over all frames
-#in each frame
-# use plt.imshow to plot gamma
-# use celluloid to save this as a video
 
-all_time_values = np.linspace(0,10,100)
-x = np.linspace(0,20,101)
+#with fixed colorbar
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(all_gamma.shape[0]):
     this_gamma_frame = all_gamma[index,:,:]
     img_gamma = this_gamma_frame 
     plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-    plt.colorbar(ax = plt.gca())
-    #plt.plot(x, img_gamma)
-    # plt.xlable('x')
-   # plt.ylable('Gamma')
+    #plt.colorbar(ax = plt.gca())
     animation_camera.snap()
+plt.colorbar()
 animation = animation_camera.animate()
 animation.save('Gamma_include_gamma.gif')
-animation.save('Gamma_include_gamma.mp4')#There is a error here:unknown file extension: .mp4
+animation.save('Gamma_include_gamma.mp4')
 
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_v_x.shape[0]):
+    this_v_x_frame = all_v_x[index,:,:]
+    img_v_x = this_v_x_frame 
+    plt.imshow(img_v_x, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+animation = animation_camera.animate()
+animation.save('Vx_include_gamma.gif')
+animation.save('Vx_include_gamma.mp4')
+
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_v_y.shape[0]):
+    this_v_y_frame = all_v_y[index,:,:]
+    img_v_y = this_v_y_frame 
+    plt.imshow(img_v_y, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+animation = animation_camera.animate()
+animation.save('Vy_include_gamma.gif')
+animation.save('Vy_include_gamma.mp4')
+
+
+# with changing colorbar
+#plt.rcParams["figure.figsize"] = [7.50, 3.50]
+# plt.rcParams["figure.autolayout"] = True
+
+# fig = plt.figure()
+
+# ax = fig.add_subplot(111)
+# div = make_axes_locatable(ax)
+# cax = div.append_axes('right', '5%', '5%')
+# im = plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+# cb = fig.colorbar(im, cax=cax)
+# tx = ax.set_title('Frame 0')
+# cmap = ["copper", 'RdBu_r', 'Oranges', 'cividis', 'hot', 'plasma']
+
+# def animate(i):
+#    cax.cla()
+#    fig.colorbar(im, cax=cax)
+#    tx.set_text('Frame {0}'.format(i))
+# ani = animation.FuncAnimation(fig, animation, frames=83)
+
+# plt.show()
 
 #was tring to implement in this way, also, there are errors, I have fixed some, except this:AttributeError: 'numpy.ndarray' object has no attribute 'axes'
 # import matplotlib.pyplot as plt
@@ -151,33 +193,6 @@ animation.save('Gamma_include_gamma.mp4')#There is a error here:unknown file ext
 # animation.save('Gamma_include_gamma.mp4')
 
 
-# all_time_values = np.linspace(0,10,100)
-# x = np.linspace(0,20,101)
-# plt.figure()
-# animation_camera = celluloid.Camera(plt.gcf())
-# #image_vx = all_v_x[0,;,;]
-# for t in all_time_values:
-# #    plt.imshow(image_vx, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-#     animation_camera.snap()
-# animation=animation_camera.animate()
-# animation.save('all_v_x.gif')
-# 
-# 
-# 
-# 
-# 
-# #make a separate figure like this for the velocities
-# all_time_values = np.linspace(0,10,100)
-# x = np.linspace(0,20,101)
-# plt.figure()
-# animation_camera = celluloid.Camera(plt.gcf())
-# for t in all_time_values:
-#     plt.plot(all_gamma,color='blue')
-#     plt.xlable('x')
-#     plt.ylable('all_v_x')
-#     animation_camera.snap()
-# animation=animation_camera.animate()
-# animation.save('all_v_x.mp4')
 
 
 
