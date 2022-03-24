@@ -155,6 +155,16 @@ animation = animation_camera.animate()
 animation.save('Vy_include_gamma.gif')
 animation.save('Vy_include_gamma.mp4')
 
+#Analyze data
+np.max(all_gamma) #0.10045326294196048
+np.min(all_gamma)#-0.12542897672599013
+#same point different frame compare?
+x_gamma =np.array([1:1000])
+y_gamma =np.array([all_gamma[0,:,:]])
+plt.plot(y_gamma, marker = 'o')
+matplotlib.pyplot.scatter(x_gamma,y_gamma, s=None, c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)
+plt.bar()
+
 
 # with changing colorbar
 #plt.rcParams["figure.figsize"] = [7.50, 3.50]
