@@ -186,6 +186,31 @@ ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Animate_Gamma_include_gamma000.gif')
 
 
+
+
+
+
+
+from matplotlib.animation import FuncAnimation
+fig = plt.figure()
+
+ax = fig.add_subplot(111)
+div = make_axes_locatable(ax)
+cax = div.append_axes('right', size='5%', pad='5%')
+data = np.array(all_gamma)
+im = ax.imshow(data)
+cb = fig.colorbar(im, cax=cax)
+tx = ax.set_title('Gamma_include_gamma Frame 0')
+def animate(i):  
+    cax.cla()
+    data = np.array(all_gamma)
+    im = ax.imshow(data)
+    fig.colorbar(im,cax = cax)
+    tx.set_text('Gamma_include_gamma Frame {0}'.format(i))   
+ax.set_xlabel("Number of Boxes")
+ax.set_ylabel("Number of Boxes")  
+ani = FuncAnimation(fig, animate, frames=83)
+ani.save('Animate_Gamma_include_gamma000.gif')
 #fig.add_subplot(ROW,COLUMN,POSITION),fig.add_subplot(111)There is only one subplot or graph
 #cax.cla() Clear the current axes.
 #plt.gca()If the current axes doesn't exist, or isn't a polar one, the appropriate axes will be created and then returned.
