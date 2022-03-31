@@ -116,77 +116,84 @@ skimage.io.imsave('Vx_include_gamma.tif', all_v_x)
 skimage.io.imsave('Vy_include_gamma.tif', all_v_y)
 skimage.io.imsave('Gamma_include_gamma.tif', all_gamma)
 
-#with fixed colorbar
-plt.figure()
-animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure
-for index in range(all_gamma.shape[0]):
-    this_gamma_frame = all_gamma[index,:,:]
-    img_gamma = this_gamma_frame 
-    plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_gamma), vmax=np.max(all_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-    #plt.colorbar(ax = plt.gca())
-    animation_camera.snap()
-plt.colorbar()
-#plt.colobar.set_title("Values of gamma")
-plt.title("Gamma_include_gamma")
-plt.xlabel("Number of Boxes")
-plt.ylabel("Number of Boxes")
-animation = animation_camera.animate()
-animation.save('Gamma_include_gamma.gif')
-animation.save('Gamma_include_gamma.mp4')
+# #with fixed colorbar
+# plt.figure()
+# animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure
+# for index in range(all_gamma.shape[0]):
+#     this_gamma_frame = all_gamma[index,:,:]
+#     img_gamma = this_gamma_frame 
+#     plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_gamma), vmax=np.max(all_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+#     #plt.colorbar(ax = plt.gca())
+#     animation_camera.snap()
+# plt.colorbar()
+# #plt.colobar.set_title("Values of gamma")
+# plt.title("Gamma_include_gamma")
+# plt.xlabel("Number of Boxes")
+# plt.ylabel("Number of Boxes")
+# animation = animation_camera.animate()
+# animation.save('Gamma_include_gamma.gif')
+# animation.save('Gamma_include_gamma.mp4')
 
 
 
 
 # with changing colorbar
 
-fig = plt.figure()
-animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure
-for index in range(all_gamma.shape[0]):
-    
-    this_gamma_frame = all_gamma[index,:,:]
-    img_gamma = this_gamma_frame 
-    plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(img_gamma), vmax=np.max(img_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-    
-    cb = plt.colorbar()
-    cb.remove()
-    plt.colorbar(ax = plt.gca()) 
-    animation_camera.snap() 
-plt.title("Gamma_include_gamma")
-plt.xlabel("Number of Boxes")
-plt.ylabel("Number of Boxes")
-animation = animation_camera.animate()
-animation.save('Animate_Gamma_include_gamma.gif')
+# fig = plt.figure()
+# animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure
+# for index in range(all_gamma.shape[0]):
+#     
+#     this_gamma_frame = all_gamma[index,:,:]
+#     img_gamma = this_gamma_frame 
+#     plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(img_gamma), vmax=np.max(img_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+#     
+#     cb = plt.colorbar()
+#     cb.remove()
+#     plt.colorbar(ax = plt.gca()) 
+#     animation_camera.snap() 
+# plt.title("Gamma_include_gamma")
+# plt.xlabel("Number of Boxes")
+# plt.ylabel("Number of Boxes")
+# animation = animation_camera.animate()
+# animation.save('Animate_Gamma_include_gamma.gif')
 
 
 
 
-from matplotlib.animation import FuncAnimation
-fig = plt.figure()
+# from matplotlib.animation import FuncAnimation
+# fig = plt.figure()
+# 
+# ax = fig.add_subplot(111)
+# div = make_axes_locatable(ax)
+# cax = div.append_axes('right', size='5%', pad='5%')#cax:Axes into which the colorbar will be drawn.
+# for index in range(all_gamma.shape[0]):
+#     this_gamma_frame = all_gamma[index,:,:]
+#     img_gamma = this_gamma_frame 
+#     im = ax.imshow(img_gamma,vmin=np.min(img_gamma), vmax=np.max(img_gamma))
+#     cb = fig.colorbar(im, cax=cax)
+#     tx = ax.set_title('Gamma_include_gamma Frame 0')
+# def animate(i):  
+#     cax.cla()
+#     for index in range(all_gamma.shape[0]):
+#         this_gamma_frame = all_gamma[index,:,:]
+#         img_gamma = this_gamma_frame 
+#         im = ax.imshow(img_gamma, vmin=np.min(img_gamma), vmax=np.max(img_gamma))
+#     fig.colorbar(im,cax = cax)
+#     tx.set_text('Gamma_include_gamma Frame {0}'.format(i))   
+# ax.set_xlabel("Number of Boxes")
+# ax.set_ylabel("Number of Boxes")  
+# ani = FuncAnimation(fig, animate, frames=83)
+# ani.save('Animate_Gamma_include_gamma000.gif')
 
-ax = fig.add_subplot(111)
-div = make_axes_locatable(ax)
-cax = div.append_axes('right', size='5%', pad='5%')#cax:Axes into which the colorbar will be drawn.
-for index in range(all_gamma.shape[0]):
-    this_gamma_frame = all_gamma[index,:,:]
-    img_gamma = this_gamma_frame 
-    im = ax.imshow(img_gamma,vmin=np.min(img_gamma), vmax=np.max(img_gamma))
-    cb = fig.colorbar(im, cax=cax)
-    tx = ax.set_title('Gamma_include_gamma Frame 0')
-def animate(i):  
-    cax.cla()
-    for index in range(all_gamma.shape[0]):
-        this_gamma_frame = all_gamma[index,:,:]
-        img_gamma = this_gamma_frame 
-        im = ax.imshow(img_gamma, vmin=np.min(img_gamma), vmax=np.max(img_gamma))
-    fig.colorbar(im,cax = cax)
-    tx.set_text('Gamma_include_gamma Frame {0}'.format(i))   
-ax.set_xlabel("Number of Boxes")
-ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
-ani.save('Animate_Gamma_include_gamma000.gif')
+# plot and save a figure of frame 25
 
-
-
+for frame_number in range(83):
+    my_fig = plt.figure()
+    data = all_gamma[frame_number,:,:]
+    frame24 = plt.imshow(data)
+    plt.colorbar()
+    plt.title('frame ' + str(frame_number))
+    my_fig.savefig("frame_" + str(frame_number) +"24.png")
 
 
 
@@ -197,13 +204,13 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 div = make_axes_locatable(ax)
 cax = div.append_axes('right', size='5%', pad='5%')
-data = np.array(all_gamma)
+data = np.random.rand(5,5)
 im = ax.imshow(data)
 cb = fig.colorbar(im, cax=cax)
 tx = ax.set_title('Gamma_include_gamma Frame 0')
 def animate(i):  
     cax.cla()
-    data = np.array(all_gamma)
+    data = all_gamma[i,:,:]
     im = ax.imshow(data)
     fig.colorbar(im,cax = cax)
     tx.set_text('Gamma_include_gamma Frame {0}'.format(i))   
@@ -211,10 +218,10 @@ ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
 ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Animate_Gamma_include_gamma000.gif')
+ani.save('gamma_with_changing_colorbar.mp4')
 #fig.add_subplot(ROW,COLUMN,POSITION),fig.add_subplot(111)There is only one subplot or graph
 #cax.cla() Clear the current axes.
 #plt.gca()If the current axes doesn't exist, or isn't a polar one, the appropriate axes will be created and then returned.
-
 
 
 
