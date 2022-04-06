@@ -245,7 +245,7 @@ for frame_number in range(83):
 
 
 
-#Visualizing velocity
+#Visualizing velocity frame 0
 fig = plt.figure()
 x_pos = np.mgrid[0:1020:20]
 y_pos = np.mgrid[0:1020:20]
@@ -258,6 +258,61 @@ plt.ylabel("Number of Pixels")
 plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
 plt.show()
 fig.savefig("visualizing fame0.png")
+
+
+
+#Visualizing Velocity moive
+fig = plt.figure()
+tx = plt.title('Visualizing Velocity Frame 0')
+def animate(i): 
+       plt.cla()
+       x_pos = np.mgrid[0:1020:20]
+       y_pos = np.mgrid[0:1020:20]
+       x_direct = all_v_x[i,:,:]
+       y_direct = all_v_y[i,:,:]
+       plt.imshow(all_images[i,:,:])
+       plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+       plt.title("Visualizing Velocity") 
+       plt.xlabel("Number of Pixels")
+       plt.ylabel("Number of Pixels")
+ani = FuncAnimation(fig, animate, frames=83)
+ani.save('Visualizing Velocity.gif')
+ani.save('Visualizing Velocity.mp4')
+
+#method 2 works as well
+fig = plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(83):
+       x_pos = np.mgrid[0:1020:20]
+       y_pos = np.mgrid[0:1020:20]
+       x_direct = all_v_x[index,:,:]
+       y_direct = all_v_y[index,:,:]
+       plt.imshow(all_images[index,:,:])
+       plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+       animation_camera.snap()
+plt.title("Visualizing Velocity")
+plt.xlabel("Number of Pixels")
+plt.ylabel("Number of Pixels")        
+animation = animation_camera.animate()
+animation.save('Visualizing Velocity083.gif')
+
+#method 3
+plt.figure()
+visualizing_images = np.zeros_like(all_images, dtype ='double')
+for index in range(83):
+    x_pos = np.mgrid[0:1020:20]
+    y_pos = np.mgrid[0:1020:20]
+    x_direct = all_v_x[index,:,:]
+    y_direct = all_v_y[index,:,:]
+    plt.imshow(all_images[index,:,:])
+    plt.title("Visualizing Velocity")
+    plt.xlabel("Number of Pixels")
+    plt.ylabel("Number of Pixels")
+    plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+    this_visualizing_frame = plt.show()
+    visualizing_images[index,:,:] = this_visualizing_frame   
+skimage.io.imsave('Visualizing velocity.tif', visualizing_images)
+#No idea why this tif document is black?
 
 
 #np.meshgrid:create a rectangular grid out of two given one-dimensional arrays representing the Cartdesian indexing or Matrix indexing.
