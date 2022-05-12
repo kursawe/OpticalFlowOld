@@ -213,6 +213,7 @@ animation = animation_camera.animate()
 animation.save('Vy_include_gamma.gif')
 animation.save('Vy_include_gamma.mp4')
 
+
 ##with changing colorbar
 from matplotlib.animation import FuncAnimation
 fig = plt.figure()
@@ -244,7 +245,6 @@ for frame_number in range(83):
     my_fig.savefig("frame_" + str(frame_number) +".png")
 
 
-
 #Visualizing velocity frame 0
 fig = plt.figure()
 x_pos = np.mgrid[0:1020:20]
@@ -255,23 +255,25 @@ plt.imshow(all_images[0,:,:])
 plt.title("Visualizing Velocity Frame0")
 plt.xlabel("Number of Pixels")
 plt.ylabel("Number of Pixels")
-plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')
 plt.show()
 fig.savefig("visualizing fame0.png")
 
 
 
-#Visualizing Velocity moive
+#Visualizing Velocity moive(this arrow in the center of each boxes)
 fig = plt.figure()
 tx = plt.title('Visualizing Velocity Frame 0')
 def animate(i): 
        plt.cla()
        x_pos = np.mgrid[0:1020:20]
+       x_pos += 10
        y_pos = np.mgrid[0:1020:20]
+       y_pos += 10
        x_direct = all_v_x[i,:,:]
        y_direct = all_v_y[i,:,:]
        plt.imshow(all_images[i,:,:])
-       plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+       plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')#arrow is in wrong direction because matplt and quiver have different coordanites
        plt.title("Visualizing Velocity") 
        plt.xlabel("Number of Pixels")
        plt.ylabel("Number of Pixels")
@@ -279,7 +281,7 @@ ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Visualizing Velocity.gif')
 ani.save('Visualizing Velocity.mp4')
 
-#method 2 works as well
+#method 2 works as well(this arrow in the begining of each boxes)
 fig = plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(83):
@@ -288,38 +290,99 @@ for index in range(83):
        x_direct = all_v_x[index,:,:]
        y_direct = all_v_y[index,:,:]
        plt.imshow(all_images[index,:,:])
-       plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
+       plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')
        animation_camera.snap()
 plt.title("Visualizing Velocity")
 plt.xlabel("Number of Pixels")
 plt.ylabel("Number of Pixels")        
 animation = animation_camera.animate()
 animation.save('Visualizing Velocity083.gif')
-
-#method 3
-plt.figure()
-visualizing_images = np.zeros_like(all_images, dtype ='double')
-for index in range(83):
-    x_pos = np.mgrid[0:1020:20]
-    y_pos = np.mgrid[0:1020:20]
-    x_direct = all_v_x[index,:,:]
-    y_direct = all_v_y[index,:,:]
-    plt.imshow(all_images[index,:,:])
-    plt.title("Visualizing Velocity")
-    plt.xlabel("Number of Pixels")
-    plt.ylabel("Number of Pixels")
-    plt.quiver(x_pos, y_pos, x_direct, y_direct, color = 'white')
-    this_visualizing_frame = plt.show()
-    visualizing_images[index,:,:] = this_visualizing_frame   
-skimage.io.imsave('Visualizing velocity.tif', visualizing_images)
-#No idea why this tif document is black?
-
-
 #np.meshgrid:create a rectangular grid out of two given one-dimensional arrays representing the Cartdesian indexing or Matrix indexing.
 #np.linspace:a tool creating numeric sequences. creates sequences of evenly spaced numbers structured as a NumPy array.
 #matplotlib.pyplot.quiver(*args, data=None, **kwargs):Plot a 2D field of arrows.
 #quiver([X, Y], U, V, [C], **kw):X, Y define the arrow locations, U, V define the arrow directions, and C optionally sets the color.
 
+
+#Moive of contraction/extension div(v)
+Nb_ = 49
+all_div_v = np.zeros((number_of_frames-1,Nb_,Nb_))
+for frame_index in range(1,blurred_images.shape[0]):
+    div_v = all_div_v[frame_index-1,:,:]
+    current_all_v_x = all_v_x[frame_index]
+    previous_all_v_x = all_v_x[frame_index -1]
+    current_all_v_y = all_v_y[frame_index]
+    previous_all_v_y = all_v_y[frame_index -1]
+    #for box_index_x in range(Nb_):
+        #for box_index_y in range(Nb_): 
+    dV_xdx = (current_all_v_x[2:,:] + previous_all_v_x[2:,:] - current_all_v_x[:-2,:]-current_all_v_x[:-2,:])/(4*delta_t)
+    dV_ydy = (current_all_v_y[:,2:] + previous_all_v_y[:,2:] - current_all_v_y[:,:-2]-previous_all_v_y[:,:-2])/(4*delta_t)
+    #this_div_v = dV_xdx + dV_ydy
+    this_div_v = dV_xdx[:,:-2] + dV_ydy[:-2,:]
+            #div_v[box_index_x,box_index_y] = this_div_v
+    div_v = this_div_v
+ #dV_xdx.shape(49, 51) ,dV_ydy.shape  (51, 49) 
+#axis=1 insert 1 column, axis=0 insert 1 row               
+skimage.io.imsave('div_v_include_gamma.tif', all_div_v)
+
+
+from matplotlib.animation import FuncAnimation
+fig = plt.figure()
+
+ax = fig.add_subplot(111)
+div = make_axes_locatable(ax)
+cax = div.append_axes('right', size='5%', pad='5%')
+tx = ax.set_title('div_v_include_gamma Frame 0')
+def animate(i):  
+    cax.cla()
+    data = all_div_v[i,:,:]
+    im = ax.imshow(data)
+    fig.colorbar(im,cax = cax)
+    tx.set_text('div_v_include_gamma Frame {0}'.format(i))   
+ax.set_xlabel("Number of Boxes")
+ax.set_ylabel("Number of Boxes")  
+ani = FuncAnimation(fig, animate, frames=83)
+ani.save('Animate_div_v_include_gamma_changing_colorbar.gif')
+ani.save('div_v_include_gamma_with_changing_colorbar.mp4')
+
+
+
+
+
+#Quantify the contributions of the remodeling made to the cytoskeleton dynamics
+all_gamma_contributions = np.zeros((number_of_frames-1,Nb,Nb))
+all_difference_to_previous_frame = np.zeros((number_of_frames-1,51,51))
+for frame_index in range(1,blurred_images.shape[0]):
+    gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
+    difference_to_previous_frame = blurred_images[frame_index] - blurred_images[frame_index -1]
+    #sum difference_to_previous_frame every 20 pixels
+    all_difference_to_previous_frame[frame_index-1,:,:] = np.sum(difference_to_previous_frame)
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):
+                sum6 = np.sum()
+                this_gamma_contributions = all_gamma[frame_index,box_index_x,box_index_y]/sum6
+                this_gamma_contributions = all_gamma[0,0,0]/all_difference_to_previous_frame[0,20,20]
+                #gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
+                this_gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
+
+from matplotlib.animation import FuncAnimation
+fig = plt.figure()
+
+ax = fig.add_subplot(111)
+div = make_axes_locatable(ax)
+cax = div.append_axes('right', size='5%', pad='5%')
+tx = ax.set_title('all_gamma_contributions Frame 0')
+def animate(i):  
+    cax.cla()
+    data = all_div_v[i,:,:]
+    im = ax.imshow(data)
+    fig.colorbar(im,cax = cax)
+    tx.set_text('all_gamma_contributions Frame {0}'.format(i))   
+ax.set_xlabel("Number of Boxes")
+ax.set_ylabel("Number of Boxes")  
+ani = FuncAnimation(fig, animate, frames=83)
+ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.gif')
+            
+            
 #Analyze data
 #same point different frame compare?
 # x_gamma =np.array([1:1000])
@@ -327,9 +390,6 @@ skimage.io.imsave('Visualizing velocity.tif', visualizing_images)
 # plt.plot(y_gamma, marker = 'o')
 # matplotlib.pyplot.scatter(x_gamma,y_gamma, s=None, c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)
 # plt.bar()
-
-
-
 
 
 
