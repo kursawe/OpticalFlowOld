@@ -8,6 +8,9 @@ import celluloid
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
+plt.rcParams["animation.ffmpeg_path"] = '/Users/apple/Desktop/optical flow_Jochen/OpticalFlow/ffmpeg/bin/ffmpeg'
+
+
 
 # define all important algorithm parameters
 smoothing_sigma = 1
@@ -53,8 +56,8 @@ for frame_index in range(1,blurred_images.shape[0]):
     previous_frame = blurred_images[frame_index -1]
     # easier way: 
     # TODO: use the correct equation here (i.e. combining averages from next frame and current frame
-    dIdx = (current_frame[2:,:] +previous_frame[2:,:] - current_frame[:-2,:]-previous_frame[:-2,:])/(4*delta_t)
-    dIdy = (current_frame[:,2:] +previous_frame[:,2:] - current_frame[:,:-2]-previous_frame[:,:-2])/(4*delta_t)
+    dIdx = (current_frame[2:,1:-1] +previous_frame[2:,1:-1] - current_frame[:-2,1:-1]-previous_frame[:-2,1:-1])/(4*delta_t)
+    dIdy = (current_frame[1:-1,2:] +previous_frame[1:-1,2:] - current_frame[1:-1,:-2]-previous_frame[1:-1,:-2])/(4*delta_t)
     delta_I = current_frame-previous_frame
     # at pixel i,j, content of the sum in the error function is
     # dIdt
@@ -161,20 +164,20 @@ ani.save('gamma_with_changing_colorbar.mp4')
 #plt.gca()If the current axes doesn't exist, or isn't a polar one, the appropriate axes will be created and then returned
 
 
-plt.figure()
-animation_camera = celluloid.Camera(plt.gcf())
-for index in range(all_v_x.shape[0]):
-    this_v_x_frame = all_v_x[index,:,:]
-    img_v_x = this_v_x_frame 
-    plt.imshow(img_v_x, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_v_x), vmax=np.max(all_v_x), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-    animation_camera.snap()
-plt.colorbar()
-plt.title("Vx_include_gamma")
-plt.xlabel("Number of Boxes")
-plt.ylabel("Number of Boxes")
-animation = animation_camera.animate()
-animation.save('Vx_include_gamma.gif')
-animation.save('Vx_include_gamma.mp4')
+# plt.figure()
+# animation_camera = celluloid.Camera(plt.gcf())
+# for index in range(all_v_x.shape[0]):
+#     this_v_x_frame = all_v_x[index,:,:]
+#     img_v_x = this_v_x_frame 
+#     plt.imshow(img_v_x, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_v_x), vmax=np.max(all_v_x), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+#     animation_camera.snap()
+# plt.colorbar()
+# plt.title("Vx_include_gamma")
+# plt.xlabel("Number of Boxes")
+# plt.ylabel("Number of Boxes")
+# animation = animation_camera.animate()
+# animation.save('Vx_include_gamma.gif')
+# animation.save('Vx_include_gamma.mp4')
 
 #with changing colorbar
 from matplotlib.animation import FuncAnimation
@@ -198,20 +201,20 @@ ani.save('Vx_include_gamma_with_changing_colorbar.mp4')
 
 
 
-plt.figure()
-animation_camera = celluloid.Camera(plt.gcf())
-for index in range(all_v_y.shape[0]):
-    this_v_y_frame = all_v_y[index,:,:]
-    img_v_y = this_v_y_frame 
-    plt.imshow(img_v_y, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_v_y), vmax=np.max(all_v_y), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
-    animation_camera.snap()
-plt.colorbar()
-plt.title("Vy_include_gamma")
-plt.xlabel("Number of Boxes")
-plt.ylabel("Number of Boxes")
-animation = animation_camera.animate()
-animation.save('Vy_include_gamma.gif')
-animation.save('Vy_include_gamma.mp4')
+# plt.figure()
+# animation_camera = celluloid.Camera(plt.gcf())
+# for index in range(all_v_y.shape[0]):
+#     this_v_y_frame = all_v_y[index,:,:]
+#     img_v_y = this_v_y_frame 
+#     plt.imshow(img_v_y, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_v_y), vmax=np.max(all_v_y), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+#     animation_camera.snap()
+# plt.colorbar()
+# plt.title("Vy_include_gamma")
+# plt.xlabel("Number of Boxes")
+# plt.ylabel("Number of Boxes")
+# animation = animation_camera.animate()
+# animation.save('Vy_include_gamma.gif')
+# animation.save('Vy_include_gamma.mp4')
 
 
 ##with changing colorbar
@@ -236,13 +239,13 @@ ani.save('Vy_include_gamma_with_changing_colorbar.mp4')
 
 
 # plot and save a figure of feach frame
-for frame_number in range(83):
-    my_fig = plt.figure()
-    data = all_gamma[frame_number,:,:]
-    frame = plt.imshow(data)
-    plt.colorbar()
-    plt.title('frame ' + str(frame_number))
-    my_fig.savefig("frame_" + str(frame_number) +".png")
+#for frame_number in range(83):
+   # my_fig = plt.figure()
+   # data = all_gamma[frame_number,:,:]
+   # frame = plt.imshow(data)
+   # plt.colorbar()
+   # plt.title('frame ' + str(frame_number))
+   # my_fig.savefig("frame_" + str(frame_number) +".png")
 
 
 #Visualizing velocity frame 0
@@ -277,6 +280,7 @@ def animate(i):
        plt.title("Visualizing Velocity") 
        plt.xlabel("Number of Pixels")
        plt.ylabel("Number of Pixels")
+       plt.tight_layout()#make sure all lables fit in the frame
 ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Visualizing Velocity.gif')
 ani.save('Visualizing Velocity.mp4')
@@ -296,7 +300,7 @@ plt.title("Visualizing Velocity")
 plt.xlabel("Number of Pixels")
 plt.ylabel("Number of Pixels")        
 animation = animation_camera.animate()
-animation.save('Visualizing Velocity083.gif')
+animation.save('Visualizing Velocity_arrow in the begining.gif')
 #np.meshgrid:create a rectangular grid out of two given one-dimensional arrays representing the Cartdesian indexing or Matrix indexing.
 #np.linspace:a tool creating numeric sequences. creates sequences of evenly spaced numbers structured as a NumPy array.
 #matplotlib.pyplot.quiver(*args, data=None, **kwargs):Plot a 2D field of arrows.
@@ -304,9 +308,9 @@ animation.save('Visualizing Velocity083.gif')
 
 
 #Moive of contraction/extension div(v)
-Nb_ = 49
-all_div_v = np.zeros((number_of_frames-1,Nb_,Nb_))
-for frame_index in range(1,blurred_images.shape[0]):
+
+all_div_v = np.zeros((number_of_frames-2,Nb-2,Nb-2))#all_v_x.shape(83,51,51)so 82 fames to calculate div(v)
+for frame_index in range(1,82):
     div_v = all_div_v[frame_index-1,:,:]
     current_all_v_x = all_v_x[frame_index]
     previous_all_v_x = all_v_x[frame_index -1]
@@ -314,12 +318,12 @@ for frame_index in range(1,blurred_images.shape[0]):
     previous_all_v_y = all_v_y[frame_index -1]
     #for box_index_x in range(Nb_):
         #for box_index_y in range(Nb_): 
-    dV_xdx = (current_all_v_x[2:,:] + previous_all_v_x[2:,:] - current_all_v_x[:-2,:]-current_all_v_x[:-2,:])/(4*delta_t)
-    dV_ydy = (current_all_v_y[:,2:] + previous_all_v_y[:,2:] - current_all_v_y[:,:-2]-previous_all_v_y[:,:-2])/(4*delta_t)
+    dV_xdx = (current_all_v_x[2:,1:-1] + previous_all_v_x[2:,1:-1] - current_all_v_x[:-2,1:-1]-current_all_v_x[:-2,1:-1])/(4*delta_t)
+    dV_ydy = (current_all_v_y[1:-1,2:] + previous_all_v_y[1:-1,2:] - current_all_v_y[1:-1,:-2]-previous_all_v_y[1:-1,:-2])/(4*delta_t)
     #this_div_v = dV_xdx + dV_ydy
-    this_div_v = dV_xdx[:,:-2] + dV_ydy[:-2,:]
+    this_div_v = dV_xdx + dV_ydy
             #div_v[box_index_x,box_index_y] = this_div_v
-    div_v = this_div_v
+    all_div_v[frame_index,:,:]= this_div_v 
  #dV_xdx.shape(49, 51) ,dV_ydy.shape  (51, 49) 
 #axis=1 insert 1 column, axis=0 insert 1 row               
 skimage.io.imsave('div_v_include_gamma.tif', all_div_v)
@@ -340,7 +344,7 @@ def animate(i):
     tx.set_text('div_v_include_gamma Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=82)
 ani.save('Animate_div_v_include_gamma_changing_colorbar.gif')
 ani.save('div_v_include_gamma_with_changing_colorbar.mp4')
 
@@ -350,19 +354,28 @@ ani.save('div_v_include_gamma_with_changing_colorbar.mp4')
 
 #Quantify the contributions of the remodeling made to the cytoskeleton dynamics
 all_gamma_contributions = np.zeros((number_of_frames-1,Nb,Nb))
-all_difference_to_previous_frame = np.zeros((number_of_frames-1,51,51))
+all_difference_to_previous_frame_box = np.zeros((number_of_frames-1,51,51))
+
 for frame_index in range(1,blurred_images.shape[0]):
     gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
     difference_to_previous_frame = blurred_images[frame_index] - blurred_images[frame_index -1]
-    #sum difference_to_previous_frame every 20 pixels
-    all_difference_to_previous_frame[frame_index-1,:,:] = np.sum(difference_to_previous_frame)
+    difference_to_previous_frame_box = all_difference_to_previous_frame_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
         for box_index_y in range(Nb):
-                sum6 = np.sum()
-                this_gamma_contributions = all_gamma[frame_index,box_index_x,box_index_y]/sum6
-                this_gamma_contributions = all_gamma[0,0,0]/all_difference_to_previous_frame[0,20,20]
+                this_difference_to_previous_frame_box = np.mean(difference_to_previous_frame[box_index_x*20:box_index_x*20+19,box_index_y*20:box_index_x:box_index_x*20+19])
+                difference_to_previous_frame_box[box_index_x,box_index_y] = this_difference_to_previous_frame_box
+
+skimage.io.imsave('all_difference_to_previous_frame_box.tif', all_difference_to_previous_frame_box)    
+ #??why nan          
+
+for frame_index in range(1,blurred_images.shape[0]):
+    gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):                
+                this_gamma_contributions = all_gamma[frame_index-1,box_index_x,box_index_y]/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
+                #gamma is average of box of each pixel
                 #gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
-                this_gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
+                all_gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
 
 from matplotlib.animation import FuncAnimation
 fig = plt.figure()
@@ -373,16 +386,22 @@ cax = div.append_axes('right', size='5%', pad='5%')
 tx = ax.set_title('all_gamma_contributions Frame 0')
 def animate(i):  
     cax.cla()
-    data = all_div_v[i,:,:]
+    data = all_gamma_contributions[i,:,:]
     im = ax.imshow(data)
     fig.colorbar(im,cax = cax)
     tx.set_text('all_gamma_contributions Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
 ani = FuncAnimation(fig, animate, frames=83)
-ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.gif')
-            
-            
+ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.mp4')
+           
+
+#set a loop similmar Vx[]= upgrade boxes of gamma:gamma_box_pixels = np.zeros((number_of_frames-1,1024,1024))
+
+    
+
+
+        
 #Analyze data
 #same point different frame compare?
 # x_gamma =np.array([1:1000])
