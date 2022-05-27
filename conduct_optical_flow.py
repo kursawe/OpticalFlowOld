@@ -362,11 +362,11 @@ for frame_index in range(1,blurred_images.shape[0]):
     difference_to_previous_frame_box = all_difference_to_previous_frame_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
         for box_index_y in range(Nb):
-                this_difference_to_previous_frame_box = np.mean(difference_to_previous_frame[box_index_x*20:box_index_x*20+19,box_index_y*20:box_index_x:box_index_x*20+19])
+                this_difference_to_previous_frame_box = np.mean(difference_to_previous_frame[box_index_x*20:box_index_x*20+20,box_index_y*20:box_index_y*20+20])#last one isnot included
                 difference_to_previous_frame_box[box_index_x,box_index_y] = this_difference_to_previous_frame_box
 
 skimage.io.imsave('all_difference_to_previous_frame_box.tif', all_difference_to_previous_frame_box)    
- #??why nan          
+        
 
 for frame_index in range(1,blurred_images.shape[0]):
     gamma_contributions = all_gamma_contributions[frame_index-1,:,:]
@@ -374,8 +374,7 @@ for frame_index in range(1,blurred_images.shape[0]):
         for box_index_y in range(Nb):                
                 this_gamma_contributions = all_gamma[frame_index-1,box_index_x,box_index_y]/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
                 #gamma is average of box of each pixel
-                #gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
-                all_gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
+                gamma_contributions[box_index_x,box_index_y] = this_gamma_contributions
 
 from matplotlib.animation import FuncAnimation
 fig = plt.figure()
@@ -396,19 +395,31 @@ ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.mp4')
            
 
-#set a loop similmar Vx[]= upgrade boxes of gamma:gamma_box_pixels = np.zeros((number_of_frames-1,1024,1024))
+#without changing colorbar
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(0,83):
+    this_gamma_contributions_frame = all_gamma_contributions[index,:,:]
+    img_gamma_contributions = this_gamma_contributions_frame 
+    plt.imshow(img_gamma_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-3, vmax=3, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    animation_camera.snap()
+plt.colorbar()
+plt.title("all_gamma_contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Animate_all_gamma_contributions_include_gamma.mp4')
+#histogram
+plt.figure()#215883pixes in total(2601each frame)yaixs is number of pixel,x aixs is gamma contribution value
+plt.hist(all_gamma_contributions.flatten(), bins=100, range=(-5,5), density=False)
+#plt.gca().set_yscale('log')#gca=get correct axis
 
+#Quantify V delata I contribution -(VxIx+VyIy)/delta I
+#Degrade Ix, Iy first
     
 
 
         
-#Analyze data
-#same point different frame compare?
-# x_gamma =np.array([1:1000])
-# y_gamma =np.array([all_gamma[0,:,:]])
-# plt.plot(y_gamma, marker = 'o')
-# matplotlib.pyplot.scatter(x_gamma,y_gamma, s=None, c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)
-# plt.bar()
 
 
 
