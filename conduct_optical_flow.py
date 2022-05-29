@@ -395,7 +395,7 @@ ani = FuncAnimation(fig, animate, frames=83)
 ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.mp4')
            
 
-#without changing colorbar
+#with fixed colorbar
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(0,83):
@@ -408,14 +408,97 @@ plt.title("all_gamma_contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Animate_all_gamma_contributions_include_gamma.mp4')
+animation.save('Animate_all_gamma_contributions_include_gamma_fixed_colorbar.mp4')
 #histogram
-plt.figure()#215883pixes in total(2601each frame)yaixs is number of pixel,x aixs is gamma contribution value
+plt.figure()#215883pixes in total(2601each frame)y aixs is number of pixel,x aixs is gamma contribution value
 plt.hist(all_gamma_contributions.flatten(), bins=100, range=(-5,5), density=False)
 #plt.gca().set_yscale('log')#gca=get correct axis
 
-#Quantify V delata I contribution -(VxIx+VyIy)/delta I
+
+#Quantify Flow contribution:V delata I = -(VxIx+VyIy)/delta I
 #Degrade Ix, Iy first
+all_flow_contributions = np.zeros((number_of_frames-1,Nb,Nb))#Nb=51
+all_dIdx_box = np.zeros((number_of_frames-1,Nb,Nb))
+all_dIdy_box = np.zeros((number_of_frames-1,Nb,Nb))
+
+for frame_index in range(1,blurred_images.shape[0]):
+    dIdx = (current_frame[2:,1:-1] +previous_frame[2:,1:-1] - current_frame[:-2,1:-1]-previous_frame[:-2,1:-1])/(4*delta_t)
+    dIdy = (current_frame[1:-1,2:] +previous_frame[1:-1,2:] - current_frame[1:-1,:-2]-previous_frame[1:-1,:-2])/(4*delta_t)
+    dIdx_box = all_dIdx_box[frame_index-1,:,:]
+    dIdy_box = all_dIdy_box[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):
+                this_dIdx_box = np.mean(dIdx[box_index_x*20:box_index_x*20+20,box_index_y*20:box_index_y*20+20])
+                dIdx_box[box_index_x,box_index_y] = this_dIdx_box
+                this_dIdy_box = np.mean(dIdy[box_index_x*20:box_index_x*20+20,box_index_y*20:box_index_y*20+20])
+                dIdy_box[box_index_x,box_index_y] = this_dIdy_box
+
+skimage.io.imsave('all_dIdx_box.tif', all_dIdx_box)  
+skimage.io.imsave('all_dIdy_box.tif', all_dIdy_box)    
+#?????why part values of all_dIdx_box/all_dIdy_box repeat/same? 
+
+      
+
+for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
+    flow_contributions = all_flow_contributions[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):                
+                this_flow_contributions = -(all_v_x[frame_index-1,box_index_x,box_index_y]*all_dIdx_box[frame_index-1,box_index_x,box_index_y] + all_v_y[frame_index-1,box_index_x,box_index_y]*all_dIdy_box[frame_index-1,box_index_x,box_index_y])/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
+                #gamma is average of box of each pixel
+                flow_contributions[box_index_x,box_index_y] = this_flow_contributions
+  
+#with changing colorbar                
+from matplotlib.animation import FuncAnimation
+fig = plt.figure()
+
+ax = fig.add_subplot(111)
+div = make_axes_locatable(ax)
+cax = div.append_axes('right', size='5%', pad='5%')
+tx = ax.set_title('all_flow_contributions Frame 0')
+def animate(i):  
+    cax.cla()
+    data = all_flow_contributions[i,:,:]
+    im = ax.imshow(data)
+    fig.colorbar(im,cax = cax)
+    tx.set_text('all_flow_contributions Frame {0}'.format(i))   
+ax.set_xlabel("Number of Boxes")
+ax.set_ylabel("Number of Boxes")  
+ani = FuncAnimation(fig, animate, frames=83)
+ani.save('Animate_all_flow_contributions_include_gamma_changing_colorbar.mp4')
+#histogram
+plt.figure()
+plt.hist(all_flow_contributions.flatten(), bins=100, range=(-5,5), density=False)#most flow contribution around 0
+
+
+#with fixed colorbar
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_flow_contributions.shape[0]):
+    this_flow_contributions_frame = all_flow_contributions[index,:,:]
+    img_flow_contributions = this_flow_contributions_frame 
+    plt.imshow(img_flow_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-5, vmax=5, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+plt.title("All_flow_contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Flow_contributions_include_gamma.mp4')
+
+
+
+#sum check if -V gradient I+gamma -Delta I =0
+all_sumcheck_box = np.zeros((number_of_frames-1,51,51))
+for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
+    sumcheck_box = all_sumcheck_box[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):                
+                this_sumcheck = -(all_v_x[frame_index-1,box_index_x,box_index_y]*all_dIdx_box[frame_index-1,box_index_x,box_index_y] + all_v_y[frame_index-1,box_index_x,box_index_y]*all_dIdy_box[frame_index-1,box_index_x,box_index_y])+all_gamma[frame_index-1,box_index_x,box_index_y]-all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
+                #gamma is average of box of each pixel
+                sumcheck_box[box_index_x,box_index_y] = this_sumcheck
+
+skimage.io.imsave('all_sumcheck_box.tif', all_sumcheck_box)# the values of the sumcheck are almost 0
     
 
 
