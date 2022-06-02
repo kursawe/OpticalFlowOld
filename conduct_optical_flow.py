@@ -444,7 +444,6 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
     for box_index_x in range(Nb):
         for box_index_y in range(Nb):                
                 this_flow_contributions = -(all_v_x[frame_index-1,box_index_x,box_index_y]*all_dIdx_box[frame_index-1,box_index_x,box_index_y] + all_v_y[frame_index-1,box_index_x,box_index_y]*all_dIdy_box[frame_index-1,box_index_x,box_index_y])/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
-                #gamma is average of box of each pixel
                 flow_contributions[box_index_x,box_index_y] = this_flow_contributions
   
 #with changing colorbar                
@@ -499,8 +498,17 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
                 sumcheck_box[box_index_x,box_index_y] = this_sumcheck
 
 skimage.io.imsave('all_sumcheck_box.tif', all_sumcheck_box)# the values of the sumcheck are almost 0
-    
 
+#sum check if relative error: (-V gradient I+gamma -Delta I)/Delta I =0
+all_relative_error_box = np.zeros((number_of_frames-1,51,51))
+for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
+    relative_error_box = all_relative_error_box[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):                
+                this_relative_error = (-(all_v_x[frame_index-1,box_index_x,box_index_y]*all_dIdx_box[frame_index-1,box_index_x,box_index_y] + all_v_y[frame_index-1,box_index_x,box_index_y]*all_dIdy_box[frame_index-1,box_index_x,box_index_y])+all_gamma[frame_index-1,box_index_x,box_index_y]-all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y])/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
+                relative_error_box[box_index_x,box_index_y] = this_relative_error 
+
+skimage.io.imsave('aall_relative_error_box.tif', all_relative_error_box)
 
         
 
