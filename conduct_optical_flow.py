@@ -422,6 +422,8 @@ all_dIdx_box = np.zeros((number_of_frames-1,Nb,Nb))
 all_dIdy_box = np.zeros((number_of_frames-1,Nb,Nb))
 
 for frame_index in range(1,blurred_images.shape[0]):
+    current_frame = blurred_images[frame_index]#have to define agian ,othewise use the loop at last frame
+    previous_frame = blurred_images[frame_index -1]
     dIdx = (current_frame[2:,1:-1] +previous_frame[2:,1:-1] - current_frame[:-2,1:-1]-previous_frame[:-2,1:-1])/(4*delta_t)
     dIdy = (current_frame[1:-1,2:] +previous_frame[1:-1,2:] - current_frame[1:-1,:-2]-previous_frame[1:-1,:-2])/(4*delta_t)
     dIdx_box = all_dIdx_box[frame_index-1,:,:]
