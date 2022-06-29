@@ -58,7 +58,8 @@ for frame_index in range(1,blurred_images.shape[0]):
     # TODO: use the correct equation here (i.e. combining averages from next frame and current frame
     dIdx = (current_frame[2:,1:-1] +previous_frame[2:,1:-1] - current_frame[:-2,1:-1]-previous_frame[:-2,1:-1])/(4*delta_t)
     dIdy = (current_frame[1:-1,2:] +previous_frame[1:-1,2:] - current_frame[1:-1,:-2]-previous_frame[1:-1,:-2])/(4*delta_t)
-    delta_I = current_frame-previous_frame
+    delta_I_too_big = current_frame-previous_frame
+    delta_I = delta_I_too_big[1:1023,1:1023]#0-1024 in total
     # at pixel i,j, content of the sum in the error function is
     # dIdt
     b = box_size*box_size #The number of pixels in the subregion is b
@@ -217,7 +218,7 @@ ani.save('Vx_include_gamma_with_changing_colorbar.mp4')
 # animation.save('Vy_include_gamma.mp4')
 
 
-##with changing colorbar
+#with changing colorbar
 from matplotlib.animation import FuncAnimation
 fig = plt.figure()
 
@@ -308,51 +309,66 @@ animation.save('Visualizing Velocity_arrow in the begining.gif')
 
 
 #Moive of contraction/extension:-intensity*div(v)
-all_div_v = np.zeros((number_of_frames-2,Nb-2,Nb-2))#all_v_x.shape(83,51,51)so 82 fames to calculate div(v)
-for frame_index in range(1,82):
-    div_v = all_div_v[frame_index-1,:,:]
+all_div_v = np.zeros((number_of_frames-1,Nb-2,Nb-2))#all_v_x.shape(83,51,51)so 82 fames to calculate div(v)
+for frame_index in range(0,83):
     current_all_v_x = all_v_x[frame_index]
-    previous_all_v_x = all_v_x[frame_index -1]
+    #previous_all_v_x = all_v_x[frame_index -1]
     current_all_v_y = all_v_y[frame_index]
-    previous_all_v_y = all_v_y[frame_index -1]
+    #previous_all_v_y = all_v_y[frame_index -1]
     #for box_index_x in range(Nb_):
         #for box_index_y in range(Nb_): 
-    dV_xdx = (current_all_v_x[2:,1:-1] + previous_all_v_x[2:,1:-1] - current_all_v_x[:-2,1:-1]-current_all_v_x[:-2,1:-1])/(4*delta_t)
-    dV_ydy = (current_all_v_y[1:-1,2:] + previous_all_v_y[1:-1,2:] - current_all_v_y[1:-1,:-2]-previous_all_v_y[1:-1,:-2])/(4*delta_t)
+    dV_xdx = (current_all_v_x[2:,1:-1] - current_all_v_x[:-2,1:-1])/(2*delta_t)
+    dV_ydy = (current_all_v_y[1:-1,2:] - current_all_v_y[1:-1,:-2])/(2*delta_t)
     this_div_v = dV_xdx + dV_ydy
             #div_v[box_index_x,box_index_y] = this_div_v
-    all_div_v[frame_index,:,:]= this_div_v 
- #dV_xdx.shape(49, 51) ,dV_ydy.shape  (51, 49)             
-skimage.io.imsave('div_v_include_gamma.tif', all_div_v)#all_div_v.shape(82, 49, 49)
-# why there are many 0 at the begining of div(v)??
+    all_div_v[frame_index,:,:]= this_div_v           
+skimage.io.imsave('div_v_include_gamma.tif', all_div_v)#all_div_v.shape(83, 49, 49)
 
-#degrade intensity
-all_intensity_box = np.zeros((number_of_frames-2,Nb-2,Nb-2))#keep in consistent with all_div_v.shape(82, 49, 49)  
-for frame_index in range(1,82):
+
+#with fixed colorbar
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_div_v.shape[0]):
+    this_div_v_frame = all_div_v[index,:,:]
+    img_div_v= this_div_v_frame 
+    plt.imshow(img_div_v, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None,  origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+plt.title("The Divergence of Velocity")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('all_div_v_fixed_colorbar.mp4')
+
+#degrade intensity to(83,51,51) cut off last frame
+all_intensity_box = np.zeros((number_of_frames-1,Nb,Nb))#keep in consistent with all_div_v.shape(83, 49, 49)  
+for frame_index in range(1,blurred_images.shape[0]):
     intensity = blurred_images[frame_index]
-    intensity_box = all_intensity_box[frame_index-2,:,:]
-    for box_index_x in range(Nb-2):
-        for box_index_y in range(Nb-2):
+    intensity_box = all_intensity_box[frame_index-1,:,:]
+    for box_index_x in range(Nb):
+        for box_index_y in range(Nb):
                 this_intensity_box = np.mean(intensity[box_index_x*20:box_index_x*20+20,box_index_y*20:box_index_y*20+20])
                 intensity_box[box_index_x,box_index_y] = this_intensity_box 
+skimage.io.imsave('all_intensity_box.tif', all_intensity_box)#all_intensity_box.shape=(83,51,51)
 
-skimage.io.imsave('all_intensity_box.tif', all_intensity_box)
-# why the midle of all_intensity_box are 0??
-all_contraction = np.zeros((number_of_frames-2,Nb-2,Nb-2))
-for frame_index in range(1,82):
+fortynine_intensity_box = all_intensity_box[:,1:-1,1:-1]#or all_intensity_box[:,1:50,1:50]
+
+all_contraction = np.zeros((number_of_frames-1,Nb-2,Nb-2))
+for frame_index in range(1,84):
     contraction = all_contraction[frame_index-1,:,:]
     for box_index_x in range(Nb-2):
         for box_index_y in range(Nb-2):             
-                this_contraction = -(all_intensity_box[frame_index-1,box_index_x,box_index_y]*all_div_v[frame_index-1,box_index_x,box_index_y])
+                this_contraction = -(fortynine_intensity_box[frame_index-1,box_index_x,box_index_y]*all_div_v[frame_index-1,box_index_x,box_index_y])
                 contraction[box_index_x,box_index_y] = this_contraction
-skimage.io.imsave('all_contraction.tif', all_contraction)
+skimage.io.imsave('all_contraction.tif', all_contraction)#all_contraction.shape(83,49,49)
 
 #histogram
 plt.figure()
-plt.hist(all_contraction.flatten(), bins=100, range=(-2,2), density=False)#most flow contribution around 0
-plt.xlabel('Values of Contractions')
+plt.hist(all_contraction.flatten(), bins=100, range=(-1,1), density=False)#most flow contribution around 0
+plt.xlabel('Values of Contractions or Relaxations')
 plt.ylabel('Number of Boxes')
-plt.title('Contractions Histogram') 
+plt.title('Contractions or Relaxations Histogram') 
 #with fixed colorbar
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
@@ -363,11 +379,11 @@ for index in range(all_contraction.shape[0]):
     #plt.colorbar(ax = plt.gca())
     animation_camera.snap()
 plt.colorbar()
-plt.title("All_contractions")
+plt.title("Contractions or Relaxations")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Contraction_fixed_colorbar.mp4')#np.max(np.abs(all_contraction))=1.5075361707652526,np.median(np.abs(all_contraction))=0.04504410245892371,np.min(np.abs(all_contraction))=0
+animation.save('Contraction_fixed_colorbar.mp4')#np.max(np.abs(all_contraction))=2.003126235420844,np.median(np.abs(all_contraction))=0.059512439332661385,np.min(np.abs(all_contraction))=1.7724330752574374e-07
 
 
 #Quantify the contributions of the remodeling made to the cytoskeleton dynamics
@@ -375,7 +391,7 @@ all_gamma_contributions = np.zeros((number_of_frames-1,Nb,Nb))
 all_difference_to_previous_frame_box = np.zeros((number_of_frames-1,51,51))
 
 for frame_index in range(1,blurred_images.shape[0]):
-    difference_to_previous_frame = blurred_images[frame_index] - blurred_images[frame_index -1]
+    difference_to_previous_frame = blurred_images[frame_index,1:1023,1:1023] - blurred_images[frame_index -1,1:1023,1:1023]
     difference_to_previous_frame_box = all_difference_to_previous_frame_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
         for box_index_y in range(Nb):
@@ -421,11 +437,11 @@ for index in range(0,83):
     plt.imshow(img_gamma_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-3, vmax=3, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
     animation_camera.snap()
 plt.colorbar()
-plt.title("all_gamma_contributions")
+plt.title("Gamma Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Animate_all_gamma_contributions_include_gamma_fixed_colorbar.mp4')
+animation.save('All_gamma_contributions_fixed_colorbar.mp4')
 #histogram
 plt.figure()#215883pixes in total(2601each frame)y aixs is number of pixel,x aixs is gamma contribution value
 plt.hist(all_gamma_contributions.flatten(), bins=100, range=(-5,5), density=False)
@@ -433,7 +449,7 @@ plt.xlabel('Values of Gamma Contribution')
 plt.ylabel('Number of Boxes')
 plt.title('Gamma Contribution Histogram')
 #plt.gca().set_yscale('log')#gca=get correct axis
-#np.max(np.abs(all_gamma_contributions))=25367.58813290297，np.max(all_gamma_contributions)=3108.87529631322
+#np.max(np.abs(all_gamma_contributions))=109053.66072638576，np.median(all_gamma_contributions)=0.993179973065583
 
 
 
@@ -481,11 +497,11 @@ def animate(i):
     data = all_flow_contributions[i,:,:]
     im = ax.imshow(data)
     fig.colorbar(im,cax = cax)
-    tx.set_text('all_flow_contributions Frame {0}'.format(i))   
+    tx.set_text('Flow Contributions Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
 ani = FuncAnimation(fig, animate, frames=83)
-ani.save('Animate_all_flow_contributions_include_gamma_changing_colorbar.mp4')
+ani.save('Animate_all_flow_contributions_changing_colorbar.mp4')
 #histogram
 plt.figure()
 plt.hist(all_flow_contributions.flatten(), bins=100, range=(-5,5), density=False)#most flow contribution around 0
@@ -503,11 +519,11 @@ for index in range(all_flow_contributions.shape[0]):
     #plt.colorbar(ax = plt.gca())
     animation_camera.snap()
 plt.colorbar()
-plt.title("All_flow_contributions")
+plt.title("Flow Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Flow_contributions_include_gamma.mp4')
+animation.save('Flow_contributions_fixed_colorbar.mp4')
 
 
 
@@ -521,7 +537,7 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
                 sumcheck_box[box_index_x,box_index_y] = this_sumcheck
 
 skimage.io.imsave('all_sumcheck_box.tif', all_sumcheck_box)# the values of the sumcheck are almost 0
-#np.max(np.abs(all_sumcheck_box))=1.734723475976807e-16,np.median(np.abs(all_sumcheck_box))=8.131516293641283e-20
+#np.max(np.abs(all_sumcheck_box))=1.734723475976807e-16,np.median(np.abs(all_sumcheck_box))=1.0842021724855044e-19
 #sum check if relative error: (-V gradient I+gamma -Delta I)/Delta I =0
 all_relative_error_box = np.zeros((number_of_frames-1,51,51))
 for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
@@ -532,7 +548,7 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
                 relative_error_box[box_index_x,box_index_y] = this_relative_error 
 
 skimage.io.imsave('all_relative_error_box.tif', all_relative_error_box)
-#np.median(np.abs(all_gamma_contributions))=0.9966649967489449，np.max(np.abs(all_relative_error_box))=6.796105763357972e-12
+#np.median(np.abs(all_relative_error_box))=1.5316630507487863e-16，np.max(np.abs(all_relative_error_box))=3.1711151758299057e-12
         
 
 #Compare the Flows and Remodeling of Actin in the Cells:flow/gamma
@@ -545,7 +561,7 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
                 flow_gamma[box_index_x,box_index_y] = this_flow_gamma
 
 skimage.io.imsave('all_flow_gamma.tif', all_flow_gamma)#all_flow_gamma.shape (83, 51, 51)
-#np.median(np.abs(all_flow_gamma))=0.0923177566867851,np.max(np.abs(all_flow_gamma))=37261.557106787855,np.min(np.abs(all_flow_gamma))=1.0969955787097583e-07
+#np.median(np.abs(all_flow_gamma))=0.09857006975070877,np.max(np.abs(all_flow_gamma))=453170.49709804816,np.min(np.abs(all_flow_gamma))=1.3353133441545005e-07
 #histogram
 plt.figure()
 plt.hist(all_flow_gamma.flatten(), bins=100, range=(0,5), density=False)#most flow contribution around 0
@@ -558,10 +574,10 @@ animation_camera = celluloid.Camera(plt.gcf())
 for index in range(0,83):
     this_flow_gamma_frame = all_flow_gamma[index,:,:]
     img_flow_gamma = this_flow_gamma_frame
-    plt.imshow(img_flow_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=0, vmax=3.5, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    plt.imshow(img_flow_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=0, vmax=3.6, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
     animation_camera.snap()
 plt.colorbar()
-plt.title("all flow over gamma")
+plt.title("Flow over Gamma")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
@@ -569,37 +585,38 @@ animation.save('Animate_all_flow_gamma_fixed_colorbar.mp4')
 
 
 #Quantify Contraction contribution: |-I div(v)|/Delta I
-        
-all_contraction_contributions = np.zeros((number_of_frames-2,Nb-2,Nb-2))#Nb=51
-for frame_index in range(1,82):#blurred_images.shape(84,1024,1024)
+#cut off outermost 2 rows of boxes of all_difference_to_previous_frame_box
+fortynine_difference_to_previous_frame_box = all_difference_to_previous_frame_box[:,1:-1,1:-1]#fortynine_difference_to_previous_frame_box.shape(83, 49, 49)
+all_contraction_contributions = np.zeros((number_of_frames-1,Nb-2,Nb-2))#Nb=51
+for frame_index in range(1,84):#blurred_images.shape(84,1024,1024)
     contraction_contributions = all_contraction_contributions[frame_index-1,:,:]
     for box_index_x in range(Nb-2):
         for box_index_y in range(Nb-2):             
-                this_contraction_contributions = abs(-(all_intensity_box[frame_index-1,box_index_x,box_index_y]*all_div_v[frame_index-1,box_index_x,box_index_y])/all_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y])
+                this_contraction_contributions = all_contraction[frame_index-1,box_index_x,box_index_y]/fortynine_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
                 contraction_contributions[box_index_x,box_index_y] = this_contraction_contributions
-skimage.io.imsave('all_contraction_contributions.tif', all_contraction_contributions)#np.max(all_contraction_contributions)=1751759.95083865,np.median(all_contraction_contributions)=0.0
+skimage.io.imsave('all_contraction_contributions.tif', all_contraction_contributions)#np.max(abs(all_contraction_contributions))=105524206.54417692,np.median(abs(all_contraction_contributions))=34.57326644972915
 
 #histogram
 plt.figure()
-plt.hist(all_contraction_contributions.flatten(), bins=100, range=(0,10), density=False)#most flow contribution around 0
-plt.xlabel('Values of Contraction Contributions')
+plt.hist(all_contraction_contributions.flatten(), bins=100, range=(-1000,1000), density=False)#most flow contribution around 0
+plt.xlabel('Contraction or Relaxations Contributions')
 plt.ylabel('Number of Boxes')
-plt.title('Contraction Contributions Histogram') 
+plt.title('Contraction or Relaxations Contributions Histogram') 
 #with fixed colorbar
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(all_contraction_contributions.shape[0]):
     this_contraction_contributions_frame = all_contraction_contributions[index,:,:]
     img_contraction_contributions = this_contraction_contributions_frame 
-    plt.imshow(img_contraction_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-5, vmax=5, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    plt.imshow(img_contraction_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-250, vmax=250, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
     #plt.colorbar(ax = plt.gca())
     animation_camera.snap()
 plt.colorbar()
-plt.title("All_contraction_contributions")
+plt.title("Contractions or Relaxations Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Contraction_contributions_include_gamma.mp4')
+animation.save('Contraction_contributions_fixed_colorbar.mp4')
 
 
 
