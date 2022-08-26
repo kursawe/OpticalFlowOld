@@ -157,7 +157,7 @@ def animate(i):
     tx.set_text('Gamma_include_gamma Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Animate_Gamma_include_gamma_changing_colorbar.gif')
 ani.save('gamma_with_changing_colorbar.mp4')
 #fig.add_subplot(ROW,COLUMN,POSITION),fig.add_subplot(111)There is only one subplot or graph
@@ -196,7 +196,7 @@ def animate(i):
     tx.set_text('Vx_include_gamma Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Vx_include_gamma_changing_colorbar.gif')
 ani.save('Vx_include_gamma_with_changing_colorbar.mp4')
 
@@ -234,7 +234,7 @@ def animate(i):
     tx.set_text('Vy_include_gamma Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Vy_include_gamma_changing_colorbar.gif')
 ani.save('Vy_include_gamma_with_changing_colorbar.mp4')
 
@@ -282,14 +282,14 @@ def animate(i):
        plt.xlabel("Number of Pixels")
        plt.ylabel("Number of Pixels")
        plt.tight_layout()#make sure all lables fit in the frame
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Visualizing Velocity.gif')
 ani.save('Visualizing Velocity.mp4')
 
 #method 2 works as well(this arrow in the begining of each boxes)
 fig = plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
-for index in range(83):
+for index in range(blurred_images.shape[0]-1):
        x_pos = np.mgrid[0:1020:20]
        y_pos = np.mgrid[0:1020:20]
        x_direct = all_v_x[index,:,:]
@@ -301,7 +301,7 @@ plt.title("Visualizing Velocity")
 plt.xlabel("Number of Pixels")
 plt.ylabel("Number of Pixels")        
 animation = animation_camera.animate()
-animation.save('Visualizing Velocity_arrow in the begining.gif')
+animation.save('Visualizing Velocity_arrow in the begining.mp4')
 #np.meshgrid:create a rectangular grid out of two given one-dimensional arrays representing the Cartdesian indexing or Matrix indexing.
 #np.linspace:a tool creating numeric sequences. creates sequences of evenly spaced numbers structured as a NumPy array.
 #matplotlib.pyplot.quiver(*args, data=None, **kwargs):Plot a 2D field of arrows.
@@ -310,7 +310,7 @@ animation.save('Visualizing Velocity_arrow in the begining.gif')
 
 #Moive of contraction/extension:-intensity*div(v)
 all_div_v = np.zeros((number_of_frames-1,Nb-2,Nb-2))#all_v_x.shape(83,51,51)so 82 fames to calculate div(v)
-for frame_index in range(0,83):
+for frame_index in range(0,blurred_images.shape[0]-1):
     current_all_v_x = all_v_x[frame_index]
     #previous_all_v_x = all_v_x[frame_index -1]
     current_all_v_y = all_v_y[frame_index]
@@ -355,7 +355,7 @@ skimage.io.imsave('all_intensity_box.tif', all_intensity_box)#all_intensity_box.
 fortynine_intensity_box = all_intensity_box[:,1:-1,1:-1]#or all_intensity_box[:,1:50,1:50]
 
 all_contraction = np.zeros((number_of_frames-1,Nb-2,Nb-2))
-for frame_index in range(1,84):
+for frame_index in range(1,blurred_images.shape[0]):
     contraction = all_contraction[frame_index-1,:,:]
     for box_index_x in range(Nb-2):
         for box_index_y in range(Nb-2):             
@@ -383,19 +383,19 @@ plt.title("Contractions or Relaxations")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Contraction_fixed_colorbar.mp4')#np.max(np.abs(all_contraction))=2.003126235420844,np.median(np.abs(all_contraction))=0.059512439332661385,np.min(np.abs(all_contraction))=1.7724330752574374e-07
+animation.save('Contractions or Relaxations_fixed_colorbar.mp4')#np.max(np.abs(all_contraction))=2.003126235420844,np.median(np.abs(all_contraction))=0.059512439332661385,np.min(np.abs(all_contraction))=1.7724330752574374e-07
 
 
 #Quantify the contributions of the remodeling made to the cytoskeleton dynamics
 all_gamma_contributions = np.zeros((number_of_frames-1,Nb,Nb))
-all_difference_to_previous_frame_box = np.zeros((number_of_frames-1,51,51))
+all_difference_to_previous_frame_box = np.zeros((number_of_frames-1,Nb,Nb))
 
 for frame_index in range(1,blurred_images.shape[0]):
     difference_to_previous_frame = blurred_images[frame_index,1:1023,1:1023] - blurred_images[frame_index -1,1:1023,1:1023]
     difference_to_previous_frame_box = all_difference_to_previous_frame_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
         for box_index_y in range(Nb):
-                this_difference_to_previous_frame_box = np.mean(difference_to_previous_frame[box_index_x*20:box_index_x*20+20,box_index_y*20:box_index_y*20+20])#last one isnot included
+                this_difference_to_previous_frame_box = np.mean(difference_to_previous_frame[box_index_x*box_size:box_index_x*box_size+box_size,box_index_y*box_size:box_index_y*box_size+box_size])#last one isnot included
                 difference_to_previous_frame_box[box_index_x,box_index_y] = this_difference_to_previous_frame_box
 
 skimage.io.imsave('all_difference_to_previous_frame_box.tif', all_difference_to_previous_frame_box)    
@@ -424,14 +424,14 @@ def animate(i):
     tx.set_text('all_gamma_contributions Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Animate_all_gamma_contributions_include_gamma_changing_colorbar.mp4')
            
 
-#with fixed colorbar
+#with fixed colorbar range(-3,3)
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
-for index in range(0,83):
+for index in range(0,blurred_images.shape[0]-1):
     this_gamma_contributions_frame = all_gamma_contributions[index,:,:]
     img_gamma_contributions = this_gamma_contributions_frame 
     plt.imshow(img_gamma_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-3, vmax=3, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
@@ -441,7 +441,21 @@ plt.title("Gamma Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('All_gamma_contributions_fixed_colorbar.mp4')
+animation.save('All_gamma_contributions_fixed_colorbar_range(-3,3).mp4')
+#with fixed colorbar range(-1,1)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(0,blurred_images.shape[0]-1):
+    this_gamma_contributions_frame = all_gamma_contributions[index,:,:]
+    img_gamma_contributions = this_gamma_contributions_frame 
+    plt.imshow(img_gamma_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-1, vmax=1, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    animation_camera.snap()
+plt.colorbar()
+plt.title("Gamma Contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Gamma_contributions_fixed_colorbar_range(-1,1).mp4')
 #histogram
 plt.figure()#215883pixes in total(2601each frame)y aixs is number of pixel,x aixs is gamma contribution value
 plt.hist(all_gamma_contributions.flatten(), bins=100, range=(-5,5), density=False)
@@ -449,7 +463,7 @@ plt.xlabel('Values of Gamma Contribution')
 plt.ylabel('Number of Boxes')
 plt.title('Gamma Contribution Histogram')
 #plt.gca().set_yscale('log')#gca=get correct axis
-#np.max(np.abs(all_gamma_contributions))=109053.66072638576，np.median(all_gamma_contributions)=0.993179973065583
+#np.max(np.abs(all_gamma_contributions))=109053.66072638576，np.median(all_gamma_contributions)=0.993179973065583,np.median(np.abs(all_gamma_contributions))=0.9968078394737059
 
 
 
@@ -500,7 +514,7 @@ def animate(i):
     tx.set_text('Flow Contributions Frame {0}'.format(i))   
 ax.set_xlabel("Number of Boxes")
 ax.set_ylabel("Number of Boxes")  
-ani = FuncAnimation(fig, animate, frames=83)
+ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
 ani.save('Animate_all_flow_contributions_changing_colorbar.mp4')
 #histogram
 plt.figure()
@@ -509,13 +523,13 @@ plt.xlabel('Values of Flow Contribution')
 plt.ylabel('Number of Boxes')
 plt.title('Flow Contribution Histogram')
 
-#with fixed colorbar
+#with fixed colorbar range (-5,5)
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(all_flow_contributions.shape[0]):
     this_flow_contributions_frame = all_flow_contributions[index,:,:]
     img_flow_contributions = this_flow_contributions_frame 
-    plt.imshow(img_flow_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-5, vmax=5, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    plt.imshow(img_flow_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-3, vmax=3, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
     #plt.colorbar(ax = plt.gca())
     animation_camera.snap()
 plt.colorbar()
@@ -523,12 +537,26 @@ plt.title("Flow Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Flow_contributions_fixed_colorbar.mp4')
-
+animation.save('Flow_contributions_fixed_colorbar range(-3,3).mp4')
+#with fixed colorbar range (-1,1)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_flow_contributions.shape[0]):
+    this_flow_contributions_frame = all_flow_contributions[index,:,:]
+    img_flow_contributions = this_flow_contributions_frame 
+    plt.imshow(img_flow_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-1, vmax=1, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+plt.title("Flow Contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Flow_contributions_fixed_colorbar range(-1,1).mp4')
 
 
 #sum check if -V gradient I+gamma -Delta I =0
-all_sumcheck_box = np.zeros((number_of_frames-1,51,51))
+all_sumcheck_box = np.zeros((number_of_frames-1,Nb,Nb))
 for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
     sumcheck_box = all_sumcheck_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
@@ -539,7 +567,7 @@ for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,102
 skimage.io.imsave('all_sumcheck_box.tif', all_sumcheck_box)# the values of the sumcheck are almost 0
 #np.max(np.abs(all_sumcheck_box))=1.734723475976807e-16,np.median(np.abs(all_sumcheck_box))=1.0842021724855044e-19
 #sum check if relative error: (-V gradient I+gamma -Delta I)/Delta I =0
-all_relative_error_box = np.zeros((number_of_frames-1,51,51))
+all_relative_error_box = np.zeros((number_of_frames-1,Nb,Nb))
 for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
     relative_error_box = all_relative_error_box[frame_index-1,:,:]
     for box_index_x in range(Nb):
@@ -571,7 +599,7 @@ plt.title('Absolute Values of Flow over Gamma Histogram')
 #with fixed colorbar
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
-for index in range(0,83):
+for index in range(0,blurred_images.shape[0]-1):
     this_flow_gamma_frame = all_flow_gamma[index,:,:]
     img_flow_gamma = this_flow_gamma_frame
     plt.imshow(img_flow_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=0, vmax=3.6, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
@@ -581,20 +609,20 @@ plt.title("Flow over Gamma")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Animate_all_flow_gamma_fixed_colorbar.mp4')
+animation.save('All_flow over gamma_fixed_colorbar range(0.3.6).mp4')
 
 
 #Quantify Contraction contribution: |-I div(v)|/Delta I
 #cut off outermost 2 rows of boxes of all_difference_to_previous_frame_box
 fortynine_difference_to_previous_frame_box = all_difference_to_previous_frame_box[:,1:-1,1:-1]#fortynine_difference_to_previous_frame_box.shape(83, 49, 49)
 all_contraction_contributions = np.zeros((number_of_frames-1,Nb-2,Nb-2))#Nb=51
-for frame_index in range(1,84):#blurred_images.shape(84,1024,1024)
+for frame_index in range(1,blurred_images.shape[0]):#blurred_images.shape(84,1024,1024)
     contraction_contributions = all_contraction_contributions[frame_index-1,:,:]
     for box_index_x in range(Nb-2):
         for box_index_y in range(Nb-2):             
                 this_contraction_contributions = all_contraction[frame_index-1,box_index_x,box_index_y]/fortynine_difference_to_previous_frame_box[frame_index-1,box_index_x,box_index_y]
                 contraction_contributions[box_index_x,box_index_y] = this_contraction_contributions
-skimage.io.imsave('all_contraction_contributions.tif', all_contraction_contributions)#np.max(abs(all_contraction_contributions))=105524206.54417692,np.median(abs(all_contraction_contributions))=34.57326644972915
+skimage.io.imsave('all_contraction_contributions.tif', all_contraction_contributions)#np.max(np.abs(all_contraction_contributions))=19484521.76087277,np.median(np.abs(all_contraction_contributions))=35.65748089931391
 
 #histogram
 plt.figure()
@@ -602,7 +630,7 @@ plt.hist(all_contraction_contributions.flatten(), bins=100, range=(-1000,1000), 
 plt.xlabel('Contraction or Relaxations Contributions')
 plt.ylabel('Number of Boxes')
 plt.title('Contraction or Relaxations Contributions Histogram') 
-#with fixed colorbar
+#with fixed colorbar range(-250,250)
 plt.figure()
 animation_camera = celluloid.Camera(plt.gcf())
 for index in range(all_contraction_contributions.shape[0]):
@@ -616,9 +644,37 @@ plt.title("Contractions or Relaxations Contributions")
 plt.xlabel("Number of Boxes")
 plt.ylabel("Number of Boxes")
 animation = animation_camera.animate()
-animation.save('Contraction_contributions_fixed_colorbar.mp4')
-
-
+animation.save('Contraction_contributions_fixed_colorbar range(-250,250).mp4')
+#with fixed colorbar range(-50,50)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_contraction_contributions.shape[0]):
+    this_contraction_contributions_frame = all_contraction_contributions[index,:,:]
+    img_contraction_contributions = this_contraction_contributions_frame 
+    plt.imshow(img_contraction_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-50, vmax=50, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+plt.title("Contractions or Relaxations Contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Contraction_contributions_fixed_colorbar range(-50,50).mp4')
+#with fixed colorbar range(-1,1)
+plt.figure()
+animation_camera = celluloid.Camera(plt.gcf())
+for index in range(all_contraction_contributions.shape[0]):
+    this_contraction_contributions_frame = all_contraction_contributions[index,:,:]
+    img_contraction_contributions = this_contraction_contributions_frame 
+    plt.imshow(img_contraction_contributions, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-1, vmax=1, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+    #plt.colorbar(ax = plt.gca())
+    animation_camera.snap()
+plt.colorbar()
+plt.title("Contractions or Relaxations Contributions")
+plt.xlabel("Number of Boxes")
+plt.ylabel("Number of Boxes")
+animation = animation_camera.animate()
+animation.save('Contraction_contributions_fixed_colorbar range(-1,1).mp4')
 
 
 
