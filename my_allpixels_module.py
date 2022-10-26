@@ -18,22 +18,27 @@ from matplotlib.colors import ListedColormap
 plt.rcParams["animation.ffmpeg_path"] = '/Users/apple/Desktop/optical flow_Jochen/OpticalFlow/ffmpeg/bin/ffmpeg'
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from numba import jit
+#from numba import jit
 
-@jit
+#@jit
 def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimage.io.imread('MB301110_i_4_movie_8 bit.tif')):
     
     mode = 'include_gamma'
     first_image = all_images[0,:,:]
     blurred_images= all_images
-    #blurred_images = np.zeros_like(all_images, dtype ='double')
+    #uncomment/comment below without jit
+    blurred_images = np.zeros_like(all_images, dtype ='double')
     
- #   for index in range(all_images.shape[0]):
- #       this_image = all_images[index,:,:]
-#        this_filtered_image = skimage.filters.gaussian(this_image, sigma =smoothing_sigma)
-#        blurred_images[index,:,:] = this_filtered_image
+    for index in range(all_images.shape[0]):
+        this_image = all_images[index,:,:]
+        this_filtered_image = skimage.filters.gaussian(this_image, sigma =smoothing_sigma)
+        blurred_images[index,:,:] = this_filtered_image
 
     #skimage.io.imsave('all_blurred.tif', blurred_images)
+    
+    
+    
+    
     I = all_images[0,:,:]
     dIdx = np.zeros_like(I)
     delta_t = 1
@@ -113,15 +118,29 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
                 pixel_v_x[pixel_index_x,pixel_index_y]= all_v_x[frame_index-1,int(pixel_index_x/box_size),int(pixel_index_y/box_size)]
                 pixel_v_y[pixel_index_x,pixel_index_y]= all_v_y[frame_index-1,int(pixel_index_x/box_size),int(pixel_index_y/box_size)]
                 pixel_gamma[pixel_index_x,pixel_index_y]= all_gamma[frame_index-1,int(pixel_index_x/box_size),int(pixel_index_y/box_size)]
-   
-    all_pixel_div_v = np.zeros((number_of_frames-1,Nb*box_size-2,Nb*box_size-2))#all_v_x.shape(83,51,51)so 82 fames to calculate div(v)
-    for frame_index in range(0,blurred_images.shape[0]-1):
-        current_all_pixel_v_x = all_pixel_v_x[frame_index]
-        current_all_pixel_v_y = all_pixel_v_y[frame_index]
-        dV_xdx_pixel = (current_all_pixel_v_x[2:,1:-1] - current_all_pixel_v_x[:-2,1:-1])/(2*delta_t)
-        dV_ydy_pixel = (current_all_pixel_v_y[1:-1,2:] - current_all_pixel_v_y[1:-1,:-2])/(2*delta_t)
-        this_div_v_pixel = dV_xdx_pixel + dV_ydy_pixel
-        all_pixel_div_v[frame_index,:,:]= this_div_v_pixel 
+   #Use all_pixel_v_x->div_v=0. so have to use all_v_x based on box->all_div_v based on box
+    all_div_v = np.zeros((number_of_frames-1,Nb-2,Nb-2))
+    for frame_index in range(1,blurred_images.shape[0]-1):
+        current_all_v_x = all_v_x[frame_index]
+        current_all_v_y = all_v_y[frame_index]
+        dV_xdx = (current_all_v_x[2:,1:-1] - current_all_v_x[:-2,1:-1])/(2*delta_t)
+        dV_ydy = (current_all_v_y[1:-1,2:] - current_all_v_y[1:-1,:-2])/(2*delta_t)
+        this_div_v = dV_xdx + dV_ydy
+        all_div_v[frame_index,:,:]= this_div_v 
+
+    all_pixel_div_v = np.zeros((number_of_frames-1,(Nb-2)*box_size,(Nb-2)*box_size))#All_v_xframe-1
+    for frame_index in range(1,blurred_images.shape[0]-1):
+        pixel_div_v = all_pixel_div_v[frame_index-1,:,:]
+        for pixel_index_x in range((Nb-2)*box_size):
+            for pixel_index_y in range((Nb-2)*box_size):
+                pixel_div_v[pixel_index_x,pixel_index_y]= all_div_v[frame_index-1,int(pixel_index_x/box_size),int(pixel_index_y/box_size)]
+    # for frame_index in range(0,blurred_images.shape[0]-1):
+    #     current_all_pixel_v_x = all_pixel_v_x[frame_index]
+    #     current_all_pixel_v_y = all_pixel_v_y[frame_index]
+    #     dV_xdx_pixel = (current_all_pixel_v_x[2:,1:-1] - current_all_pixel_v_x[:-2,1:-1])/(2*delta_t)
+    #     dV_ydy_pixel = (current_all_pixel_v_y[1:-1,2:] - current_all_pixel_v_y[1:-1,:-2])/(2*delta_t)
+    #     this_div_v_pixel = dV_xdx_pixel + dV_ydy_pixel
+    #     all_pixel_div_v[frame_index,:,:]= this_div_v_pixel 
     
         
     intensity = blurred_images#84,1024,1024
@@ -132,8 +151,8 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
     all_pixel_contraction = np.zeros((number_of_frames-1,(Nb-2)*box_size,(Nb-2)*box_size))
     for frame_index in range(1,blurred_images.shape[0]):
         pixel_contraction = all_pixel_contraction[frame_index-1,:,:]
-        for pixel_index_x in range(NP-2*box_size):
-            for pixel_index_y in range(NP-2*box_size):             
+        for pixel_index_x in range((Nb-2)*box_size):
+            for pixel_index_y in range((Nb-2)*box_size):             
                     this_pixel_contraction = -(allmtwo_pixel_intensity[frame_index-1,pixel_index_x,pixel_index_y]*all_pixel_div_v[frame_index-1,pixel_index_x,pixel_index_y])
                     pixel_contraction[pixel_index_x,pixel_index_y] = this_pixel_contraction
     
@@ -218,33 +237,33 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
     all_pixel_contraction_contributions = np.zeros((number_of_frames-1,(Nb-2)*box_size,(Nb-2)*box_size))
     for frame_index in range(1,blurred_images.shape[0]):
         pixel_contraction_contributions = all_pixel_contraction_contributions[frame_index-1,:,:]
-        for pixel_index_x in range(NP-2*box_size):
-            for pixel_index_y in range(NP-2*box_size):             
+        for pixel_index_x in range((Nb-2)*box_size):
+            for pixel_index_y in range((Nb-2)*box_size):             
                    this_pixel_contraction_contributions = all_pixel_contraction[frame_index-1,pixel_index_x,pixel_index_y]/mtwobox_pixel_deltaI[frame_index-1,pixel_index_x,pixel_index_y]
                    pixel_contraction_contributions[pixel_index_x,pixel_index_y] = this_pixel_contraction_contributions
    
      
 
-# =============================================================================
-#     dictionary = {}
-#     dictionary['all_blurred_images'] = blurred_images
-#     dictionary['all_pixel_v_x'] = all_pixel_v_x
-#     dictionary['all_pixel_v_y'] = all_pixel_v_y
-#     dictionary['all_pixel_gamma'] = all_pixel_gamma
-#     dictionary['all_pixel_div_v'] = all_pixel_div_v
-#     dictionary['all_pixel_intensity'] =  all_pixel_intensity
-#     dictionary['all_pixel_contraction'] = all_pixel_contraction
-#     dictionary['all_pixel_deltaI'] = all_pixel_deltaI
-#     dictionary['all_pixel_sumcheck'] = all_pixel_sumcheck
-#     dictionary['all_pixel_relative_error'] = all_pixel_relative_error
-#     dictionary['all_pixel_flow_gamma'] = all_pixel_flow_gamma
-#     dictionary['all_pixel_contraction_contributions'] = all_pixel_contraction_contributions
-#     dictionary['all_pixel_gamma_contributions'] = all_pixel_gamma_contributions
-#     dictionary['all_pixel_flow_contributions'] = all_pixel_flow_contributions
-#     dictionary['all_pixel_dIdx'] = all_pixel_dIdx
-#     dictionary['all_pixel_dIdy'] = all_pixel_dIdy
-#     return dictionary
-# =============================================================================
+    dictionary = {}
+    dictionary['all_blurred_images'] = blurred_images
+    dictionary['all_pixel_v_x'] = all_pixel_v_x
+    dictionary['all_pixel_v_y'] = all_pixel_v_y
+    dictionary['all_pixel_gamma'] = all_pixel_gamma
+    dictionary['all_pixel_div_v'] = all_pixel_div_v
+    dictionary['all_pixel_intensity'] =  all_pixel_intensity
+    dictionary['all_pixel_contraction'] = all_pixel_contraction
+    dictionary['all_pixel_deltaI'] = all_pixel_deltaI
+    dictionary['all_pixel_sumcheck'] = all_pixel_sumcheck
+    dictionary['all_pixel_relative_error'] = all_pixel_relative_error
+    dictionary['all_pixel_flow_gamma'] = all_pixel_flow_gamma
+    dictionary['all_pixel_contraction_contributions'] = all_pixel_contraction_contributions
+    dictionary['all_pixel_gamma_contributions'] = all_pixel_gamma_contributions
+    dictionary['all_pixel_flow_contributions'] = all_pixel_flow_contributions
+    dictionary['all_pixel_dIdx'] = all_pixel_dIdx
+    dictionary['all_pixel_dIdy'] = all_pixel_dIdy
+    dictionary['all_v_x'] = all_v_x
+    dictionary['all_v_y'] = all_v_y
+    return dictionary
  
     
  
@@ -318,12 +337,54 @@ def Vy_pixel_changing_colorbar_movie(all_v_y,blurred_images,filename ='Vy_pixel_
     #ani.save('Vy_include_gamma_changing_colorbar.gif')
     ani.save(filename)  
       
-def Visualizing_Velocity_pixel(all_images,blurred_images,all_v_x,all_v_y,arrow_boxsize=20,filename = 'Visualizing Velocity_pixel.mp4'):   
+def Visualizing_Velocity_pixel(all_images,blurred_images,all_pixel_v_x,all_pixel_v_y,box_size,arrow_box_size=20,filename = 'Visualizing Velocity_pixel.mp4'):   
+    number_of_frames = blurred_images.shape[0]
+    calculate_Nb = int((1024)/box_size)*box_size/arrow_box_size
+    arrow_Nb = int((1024)/arrow_box_size)
+    new_Nb = int(min(calculate_Nb,arrow_Nb))
+    newall_v_x  = np.zeros((number_of_frames-1,new_Nb,new_Nb))
+    newall_v_y = np.zeros((number_of_frames-1,new_Nb,new_Nb))
+    for frame_index in range(1,blurred_images.shape[0]):
+        newall_v_x_box = newall_v_x[frame_index-1,:,:]
+        for arrow_box_index_x in range(new_Nb):
+            for arrow_box_index_y in range(new_Nb):
+                this_newall_v_x_box = np.mean(all_pixel_v_x[arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
+                newall_v_x_box[arrow_box_index_x,arrow_box_index_y] = this_newall_v_x_box 
+    for frame_index in range(1,blurred_images.shape[0]):
+        newall_v_y_box = newall_v_y[frame_index-1,:,:]
+        for arrow_box_index_x in range(new_Nb):
+            for arrow_box_index_y in range(new_Nb):
+                this_newall_v_y_box = np.mean(all_pixel_v_y[arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
+                newall_v_y_box[arrow_box_index_x,arrow_box_index_y] = this_newall_v_y_box 
     fig = plt.figure()
     tx = plt.title('Visualizing Velocity Frame 0')
     def animate(i): 
         plt.cla()
-       # print('I am new')# for debug
+        image_size = blurred_images.shape[1]
+        upper_mgrid_limit = int(new_Nb*arrow_box_size)#to make1024/100=100
+        x_pos = np.mgrid[0:upper_mgrid_limit:arrow_box_size]
+        x_pos += int(arrow_box_size/2)
+        y_pos = np.mgrid[0:upper_mgrid_limit:arrow_box_size]
+        y_pos += int(arrow_box_size/2)
+        #x_direct = all_v_x[i,int(i/arrow_box_size):int(i/arrow_box_size)+arrow_box_size,:]
+        x_direct = newall_v_x[i,:,:]
+        y_direct = newall_v_y[i,:,:]
+        print(i)
+        plt.imshow(all_images[i,:,:])
+        plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')#quiver([X,Y],U,V,[C])#arrow is in wrong direction because matplt and quiver have different coordanites
+        plt.title("Visualizing Velocity") 
+        plt.xlabel("Number of Pixels")
+        plt.ylabel("Number of Pixels")
+        plt.tight_layout()#make sure all lables fit in the frame
+    ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
+    #ani.save('Visualizing Velocity.gif')
+    ani.save(filename)  
+    
+def Visualizing_Velocity_box(all_images,blurred_images,all_v_x,all_v_y,box_size,filename = 'Visualizing Velocity.mp4'):   
+    fig = plt.figure()
+    tx = plt.title('Visualizing Velocity Frame 0')
+    def animate(i): 
+        plt.cla()
         image_size = blurred_images.shape[1]
         upper_mgrid_limit = int(image_size/box_size)*box_size#to make1024/100=100
         x_pos = np.mgrid[0:upper_mgrid_limit:box_size]
@@ -339,9 +400,7 @@ def Visualizing_Velocity_pixel(all_images,blurred_images,all_v_x,all_v_y,arrow_b
         plt.ylabel("Number of Pixels")
         plt.tight_layout()#make sure all lables fit in the frame
     ani = FuncAnimation(fig, animate, frames=blurred_images.shape[0]-1)
-    #ani.save('Visualizing Velocity.gif')
-    ani.save(filename)    
-        
+    ani.save(filename)      
 
 
 def all_pixel_div_v_fixed_colorbar_movie(all_div_v,filename = "all_pixel_div_v_fixed_colorbar.mp4"): 
