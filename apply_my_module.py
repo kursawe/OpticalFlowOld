@@ -164,7 +164,7 @@ for boxsize in range(10, 21, 10):#range(start, stop, step)#boxsize can not be 1
     my_allpixels_module.Contraction_or_Relaxations_Contributions_Histogram_plot_pixel(all_contraction_contributions = my_dictionary['all_pixel_contraction_contributions'],filename ='Contraction or Relaxations Contributions Histogram_pixel'+ str(boxsize) + ".jpg")
     my_allpixels_module.Contraction_contributions_fixed_colorbar_range1_movie_pixel(all_contraction_contributions= my_dictionary['all_pixel_contraction_contributions'],filename = "Contraction_contributions_fixed_colorbar range(-1,1)_moive_pixel"+ str(boxsize) + ".mp4")
 
-#Single boxsize(dictionary run 17mins)
+#!!USED Single boxsize(dictionary run 17mins)
 my_dictionary = my_allpixels_module.conduct_optical_flow(smoothing_sigma = 1, box_size =10,all_images= my_images)
 blurred_images = my_dictionary['all_blurred_images']
 all_pixel_v_x = my_dictionary['all_pixel_v_x']
@@ -277,6 +277,78 @@ plt.show()
 
 
 
+
+
+
+
+
+#Mask
+import my_mask_module
+import skimage
+import numpy as np
+import matplotlib.pyplot as plt
+filename = 'MB301110_i_4_movie_8 bit.tif'
+
+my_images = skimage.io.imread(filename)
+for boxsize in range(10, 21, 10):#range(start, stop, step)#boxsize can not be 1
+    my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=boxsize, all_images= my_images)
+    
+    
+    #Single boxsize 
+    my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=10, all_images= my_images)
+    my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=10, all_images= my_images[1:6,:,:])
+
+
+
+    blurred_images = my_dictionary['all_blurred_images']
+    all_pixel_v_x = my_dictionary['all_pixel_v_x']
+    all_pixel_v_y = my_dictionary['all_pixel_v_y']
+    all_pixel_gamma = my_dictionary['all_pixel_gamma'] 
+    all_pixel_div_v = my_dictionary['all_pixel_div_v']
+    all_pixel_intensity = my_dictionary['all_pixel_intensity']
+    all_pixel_contraction = my_dictionary['all_pixel_contraction']
+    all_pixel_deltaI = my_dictionary['all_pixel_deltaI']
+    all_pixel_sumcheck =  my_dictionary['all_pixel_sumcheck']
+    all_pixel_relative_error =  my_dictionary['all_pixel_relative_error']
+    all_pixel_flow_gamma =  my_dictionary['all_pixel_flow_gamma']
+    all_pixel_contraction_contributions = my_dictionary['all_pixel_contraction_contributions']
+    all_pixel_gamma_contributions = my_dictionary['all_pixel_gamma_contributions']
+    all_pixel_flow_contributions = my_dictionary['all_pixel_flow_contributions']
+    all_pixel_dIdx = my_dictionary['all_pixel_dIdx']
+    all_pixel_dIdy = my_dictionary['all_pixel_dIdy']
+    
+    median_abs_all_pixel_relative_error = np.median(np.abs(all_pixel_relative_error))
+    print(median_abs_all_pixel_relative_error)
+    median_all_pixel_gamma_firstframe= np.median(all_pixel_gamma[0,:,:])
+    print(median_all_pixel_gamma_firstframe)#first frame remodeling
+    median_all_pixel_gamma= np.median(all_pixel_gamma)# median all gamma all frames
+    print(median_all_pixel_gamma)
+    print(all_pixel_gamma[0,500,500])
+    
+    my_mask_module.gamma_maskpixel_fixed_colorbar_movie(all_gamma = all_pixel_gamma,filename = "actin_gamma_maskpixel_fixed_colorbar_movie_boxsize100.mp4")
+    my_mask_module.Contractions_Relaxations_Histogram_plot_maskpixel(all_contraction = all_pixel_contraction,filename = "Actin Contractions or Relaxations Histogram_maskpixel_boxsize100.jpg")
+    my_mask_module.Visualizing_Velocity_maskpixel(all_images = my_images, blurred_images = blurred_images, all_pixel_v_x= all_pixel_v_x, all_pixel_v_y= all_pixel_v_y, box_size =100,arrow_box_size=20, filename = 'Visualizing Velocity movie_maskpixel_boxsize100.mp4')
+    my_mask_module.Contractions_or_Relaxations_fixed_colorbar_range1_movie_maskpixel(all_contraction =all_pixel_contraction,filename = "Contractions or Relaxations_fixed_colorbar_range(-1,1)_moive_maskpixel_boxsize100.mp4")
+    #my_allpixels_module.all_gamma_contributions_changing_colorbar_movie_pixel(all_gamma_contributions = all_pixel_gamma_contributions,blurred_images = blurred_images,filename = "Animate_all_gamma_contributions_changing_colorbar_moive_pixel_boxsize10.mp4")   
+    my_mask_module.all_gamma_contributions_fixed_colorbar_range1_movie_maskpixel(all_gamma_contributions = all_pixel_gamma_contributions,blurred_images = blurred_images, filename = "Gamma_contributions_fixed_colorbar_range(-1,1)_moive_maskpixel_boxsize100.mp4")    
+    my_mask_module.Gamma_contributions_Histogram_plot_maskpixel(all_gamma_contributions = all_pixel_gamma_contributions,filename ='Gamma Contribution Histogram_maskpixel_boxsize100.jpg')    
+    #my_allpixels_module.all_flow_contributions_changing_colorbar_movie_pixel(all_flow_contributions = all_pixel_flow_contributions,blurred_images = blurred_images,filename = "all_flow_contributions_changing_colorbar_moive_pixel_boxsize10.mp4")   
+    my_mask_module.Flow_Contribution_Histogram_plot_maskpixel(all_flow_contributions = all_pixel_flow_contributions,filename ="Flow Contribution Histogram_maskpixel_boxsize15.jpg")   
+    my_mask_module.all_flow_contributions_fixed_colorbar_range1_movie_maskpixel(all_flow_contributions= all_pixel_flow_contributions,filename = "Flow_contributions_fixed_colorbar range(-1,1)_moive_maskpixel_boxsize100.mp4")
+    my_mask_module.Absolute_Values_of_Flow_over_Gamma_Histogram_plot_maskpixel(all_flow_gamma = all_pixel_flow_gamma,filename ="Absolute Values of Flow over Gamma Histogram_maskpixel_boxsize100.jpg")
+    my_mask_module.All_flow_over_gamma_fixed_colorbar_range_0_max_movie_maskpixel(all_flow_gamma= all_pixel_flow_gamma,blurred_images= blurred_images,filename = "All_flow over gamma_fixed_colorbar range(max)_moive_maskpixel_boxsize100.mp4")    
+    my_mask_module.Contraction_or_Relaxations_Contributions_Histogram_plot_maskpixel(all_contraction_contributions = all_pixel_contraction_contributions,filename ="Contraction or Relaxations Contributions Histogram_maskpixel_boxsize100.jpg")
+    my_mask_module.Contraction_contributions_fixed_colorbar_range1_movie_maskpixel(all_contraction_contributions= all_pixel_contraction_contributions,filename = "Contraction_contributions_fixed_colorbar range(-1,1)_moive_maskpixel_boxsize100.mp4")
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 
