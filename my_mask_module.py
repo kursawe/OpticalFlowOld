@@ -65,11 +65,16 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
         gamma_ = all_gamma[frame_index-1,:,:]
         for pixel_index_x in range(Nb*box_size):
             #from0,...Nb-1
-            for pixel_index_y in range(Nb*box_size):
-                local_delta_I = delta_I[(max(int(pixel_index_x-box_size/2),0)):(min(int(pixel_index_x+box_size/2),int(Nb*box_size))),(max(int(pixel_index_y-box_size/2),0)):(min(int(pixel_index_y+box_size/2),int(Nb*box_size)))]
-                print("local")
-                local_dIdx = dIdx[(max(int(pixel_index_x-box_size/2),0)):(min(int(pixel_index_x+box_size/2),int(Nb*box_size))),(max(int(pixel_index_y-box_size/2),0)):(min(int(pixel_index_y+box_size/2),int(Nb*box_size)))]
-                local_dIdy = dIdy[(max(int(pixel_index_x-box_size/2),0)):(min(int(pixel_index_x+box_size/2),int(Nb*box_size))),(max(int(pixel_index_y-box_size/2),0)):(min(int(pixel_index_y+box_size/2),int(Nb*box_size)))]
+            for pixel_index_y in range(Nb*box_size):#better chose odd number box_size to make sure it's symmetrical
+                x_begining = (max(pixel_index_x-int(box_size/2),0))#e.g box_size=11,half is 5 and pixel in center
+                x_end = (min(pixel_index_x+int(box_size/2)+1,int(Nb*box_size)))#e.g box_size=11,pixel=20 then it's 26 but stop at 25
+                y_beginning = (max(pixel_index_y-int(box_size/2),0))
+                y_end = (min(pixel_index_y+int(box_size/2)+1,int(Nb*box_size)))
+                
+                local_delta_I = delta_I[x_begining:x_end,y_beginning:y_end]
+                print("local"+str(frame_index)+str(pixel_index_x))
+                local_dIdx = dIdx[x_begining:x_end,y_beginning:y_end]
+                local_dIdy = dIdy[x_begining:x_end,y_beginning:y_end]
                 
                 #*box_size
                 #local_delta_I = delta_I[int((pixel_index_x-box_size/2)*box_size):(int((pixel_index_x+box_size/2+1)*box_size)),int((pixel_index_y-box_size/2)*box_size):int((pixel_index_y+box_size/2+1)*box_size)]
@@ -260,10 +265,13 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
  
 def gamma_maskpixel_fixed_colorbar_movie(all_gamma,filename = " Gamma_maskpixel_fixed_colorbar.mp4"):    
     plt.figure()
-    animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure
+    animation_camera = celluloid.Camera(plt.gcf())#plt.gcf()Get the current figure\\
+    print(all_gamma.shape[0])
     for index in range(all_gamma.shape[0]):
         this_gamma_frame = all_gamma[index,:,:]
+        print("test")
         img_gamma = this_gamma_frame 
+        print(np.max(img_gamma))
         plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_gamma), vmax=np.max(all_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
             #plt.colorbar(ax = plt.gca())
         animation_camera.snap()
@@ -357,11 +365,21 @@ def Visualizing_Velocity_maskpixel(all_images,blurred_images,all_pixel_v_x,all_p
         x_pos += int(arrow_box_size/2)
         y_pos = np.mgrid[0:upper_mgrid_limit:arrow_box_size]
         y_pos += int(arrow_box_size/2)
+        # print(x_pos)
+        # print(y_pos)
+        #print(x_pos.shape)
+        #print(y_pos.shape)
         #x_direct = all_v_x[i,int(i/arrow_box_size):int(i/arrow_box_size)+arrow_box_size,:]
         x_direct = newall_v_x[i,:,:]
         y_direct = newall_v_y[i,:,:]
-        print(i)
+        #print(x_direct.shape)
+        #print(y_direct.shape)       
+        print(newall_v_x)
+        print(newall_v_y)
+        print(newall_v_x.shape)
+        print(newall_v_y.shape)
         plt.imshow(all_images[i,:,:])
+        #print(all_images[i,:,:].shape)
         plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')#quiver([X,Y],U,V,[C])#arrow is in wrong direction because matplt and quiver have different coordanites
         plt.title("Visualizing Velocity") 
         plt.xlabel("Number of Pixels")
@@ -384,6 +402,8 @@ def Visualizing_Velocity_box(all_images,blurred_images,all_v_x,all_v_y,box_size,
         y_pos += int(box_size/2)
         x_direct = all_v_x[i,:,:]
         y_direct = all_v_y[i,:,:]
+        print(x_pos.shape)
+        print(y_pos.shape)
         plt.imshow(all_images[i,:,:])
         plt.quiver(y_pos, x_pos, y_direct, -x_direct, color = 'white')#arrow is in wrong direction because matplt and quiver have different coordanites
         plt.title("Visualizing Velocity") 
