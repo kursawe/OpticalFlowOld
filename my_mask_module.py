@@ -336,24 +336,22 @@ def Vy_maskpixel_changing_colorbar_movie(all_v_y,blurred_images,filename ='Vy_ma
     #ani.save('Vy_include_gamma_changing_colorbar.gif')
     ani.save(filename)  
       
-def Visualizing_Velocity_maskpixel(all_images,blurred_images,all_pixel_v_x,all_pixel_v_y,box_size,arrow_box_size=20,filename = 'Visualizing Velocity_maskpixel.mp4'):   
+def Visualizing_Velocity_maskpixel(all_images,blurred_images,all_pixel_v_x,all_pixel_v_y,box_size,arrow_box_size,filename = 'Visualizing Velocity_maskpixel.mp4'):   
     number_of_frames = blurred_images.shape[0]
     calculate_Nb = int((1024)/box_size)*box_size/arrow_box_size
+    #calculate_Nb = int((all_pixel_v_x.shape[1])/arrow_box_size)
     arrow_Nb = int((1024)/arrow_box_size)
     new_Nb = int(min(calculate_Nb,arrow_Nb))
     newall_v_x  = np.zeros((number_of_frames-1,new_Nb,new_Nb))
     newall_v_y = np.zeros((number_of_frames-1,new_Nb,new_Nb))
     for frame_index in range(1,blurred_images.shape[0]):
         newall_v_x_box = newall_v_x[frame_index-1,:,:]
+        newall_v_y_box = newall_v_y[frame_index-1,:,:]        
         for arrow_box_index_x in range(new_Nb):
             for arrow_box_index_y in range(new_Nb):
-                this_newall_v_x_box = np.mean(all_pixel_v_x[arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
+                this_newall_v_x_box = np.mean(all_pixel_v_x[frame_index-1,arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
                 newall_v_x_box[arrow_box_index_x,arrow_box_index_y] = this_newall_v_x_box 
-    for frame_index in range(1,blurred_images.shape[0]):
-        newall_v_y_box = newall_v_y[frame_index-1,:,:]
-        for arrow_box_index_x in range(new_Nb):
-            for arrow_box_index_y in range(new_Nb):
-                this_newall_v_y_box = np.mean(all_pixel_v_y[arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
+                this_newall_v_y_box = np.mean(all_pixel_v_y[frame_index-1,arrow_box_index_x*arrow_box_size:arrow_box_index_x*arrow_box_size+arrow_box_size,arrow_box_index_y*arrow_box_size:arrow_box_index_y*arrow_box_size+arrow_box_size])
                 newall_v_y_box[arrow_box_index_x,arrow_box_index_y] = this_newall_v_y_box 
     fig = plt.figure()
     tx = plt.title('Visualizing Velocity Frame 0')
@@ -365,17 +363,16 @@ def Visualizing_Velocity_maskpixel(all_images,blurred_images,all_pixel_v_x,all_p
         x_pos += int(arrow_box_size/2)
         y_pos = np.mgrid[0:upper_mgrid_limit:arrow_box_size]
         y_pos += int(arrow_box_size/2)
-        # print(x_pos)
-        # print(y_pos)
-        #print(x_pos.shape)
-        #print(y_pos.shape)
-        #x_direct = all_v_x[i,int(i/arrow_box_size):int(i/arrow_box_size)+arrow_box_size,:]
+        print(x_pos)
+        print(y_pos)
+        print(x_pos.shape)
+        print(y_pos.shape)
         x_direct = newall_v_x[i,:,:]
         y_direct = newall_v_y[i,:,:]
-        #print(x_direct.shape)
-        #print(y_direct.shape)       
-        print(newall_v_x)
-        print(newall_v_y)
+        print(x_direct)
+        print(y_direct)       
+        #print(newall_v_x)
+       # print(newall_v_y)
         print(newall_v_x.shape)
         print(newall_v_y.shape)
         plt.imshow(all_images[i,:,:])
