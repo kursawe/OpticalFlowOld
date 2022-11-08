@@ -298,7 +298,7 @@ for boxsize in range(10, 21, 10):#range(start, stop, step)#boxsize can not be 1
     my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=10, all_images= my_images)
     my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=10, all_images= my_images[1:6,:,:])
 
-
+    my_dictionary = my_mask_module.conduct_optical_flow(smoothing_sigma = 1,box_size=10, all_images= my_images[1:6,500:604,500:604])
 
     blurred_images = my_dictionary['all_blurred_images']
     all_pixel_v_x = my_dictionary['all_pixel_v_x']
@@ -345,12 +345,32 @@ for boxsize in range(10, 21, 10):#range(start, stop, step)#boxsize can not be 1
     my_mask_module.Contraction_contributions_fixed_colorbar_range1_movie_maskpixel(all_contraction_contributions= all_pixel_contraction_contributions,filename = "Contraction_contributions_fixed_colorbar range(-1,1)_moive_maskpixel_boxsize10.mp4")
 
     
+#with numba @jit
+import my_jitmask_module
+import skimage
+import numpy as np
+import matplotlib.pyplot as plt
+filename = 'MB301110_i_4_movie_8 bit.tif'
+
+my_images = skimage.io.imread(filename)
+
+blurred_images = np.zeros_like(my_images, dtype ='double')
+for index in range(my_images.shape[0]):
+    this_image = my_images[index,:,:]
+    this_filtered_image = skimage.filters.gaussian(this_image, sigma =1)
+    blurred_images[index,:,:] = this_filtered_image
+new_images = blurred_images    
+    
+my_dictionary = my_jitmask_module.conduct_optical_flow(box_size=10, all_images= new_images)  
     
     
     
-    
-    
-    
+
+
+
+
+
+
     
     
 
