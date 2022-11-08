@@ -44,12 +44,10 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
     delta_t = 1
     number_of_frames = blurred_images.shape[0]
     Nb = int((1024-2)/box_size)#Number of boxes
+    ##Nb = int((102-2)/box_size)#my_images[1:6,500:604,500:604])
     all_v_x = np.zeros((number_of_frames-1,Nb*box_size,Nb*box_size))
     all_v_y = np.zeros((number_of_frames-1,Nb*box_size,Nb*box_size))
     all_gamma = np.zeros((number_of_frames-1,Nb*box_size,Nb*box_size))
-    #Not work for the begin half box_size pixels, the end half box_size pixels???
-    #begin = int(box_size/2)
-    #end = int(Nb*box_size-box_size/2)
     
     for frame_index in range(1,blurred_images.shape[0]):
         difference_to_previous_frame = blurred_images[frame_index] - blurred_images[frame_index -1]
@@ -58,7 +56,11 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
         dIdx = (current_frame[2:,1:-1] +previous_frame[2:,1:-1] - current_frame[:-2,1:-1]-previous_frame[:-2,1:-1])/(4*delta_t)
         dIdy = (current_frame[1:-1,2:] +previous_frame[1:-1,2:] - current_frame[1:-1,:-2]-previous_frame[1:-1,:-2])/(4*delta_t)
         delta_I_too_big = current_frame-previous_frame
+       
         delta_I = delta_I_too_big[1:1023,1:1023]#0-1024 in total
+        #In other words
+        ##delta_I = delta_I_too_big[1:-1,1:-1]
+        
         b = box_size*box_size 
         v_x = all_v_x[frame_index-1,:,:]
         v_y = all_v_y[frame_index-1,:,:]
@@ -72,7 +74,7 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
                 y_end = (min(pixel_index_y+int(box_size/2)+1,int(Nb*box_size)))
                 
                 local_delta_I = delta_I[x_begining:x_end,y_beginning:y_end]
-                print("local"+str(frame_index)+str(pixel_index_x))
+                print("local"+str(frame_index)+"+"+str(pixel_index_x))
                 local_dIdx = dIdx[x_begining:x_end,y_beginning:y_end]
                 local_dIdy = dIdy[x_begining:x_end,y_beginning:y_end]
                 
@@ -81,11 +83,13 @@ def conduct_optical_flow(smoothing_sigma = 1, box_size = 10, all_images = skimag
                 #local_dIdx = dIdx[int((pixel_index_x-box_size/2)*box_size):(int((pixel_index_x+box_size/2+1)*box_size)),int((pixel_index_y-box_size/2)*box_size):int((pixel_index_y+box_size/2+1)*box_size)]
                 #local_dIdy = dIdy[int((pixel_index_x-box_size/2)*box_size):(int((pixel_index_x+box_size/2+1)*box_size)),int((pixel_index_y-box_size/2)*box_size):int((pixel_index_y+box_size/2+1)*box_size)]
 
-                
-                
+                #####sum1 =np.sum(local_dIdx.dot(local_delta_I))
+                #####sum2 = np.sum(local_dIdy.dot(local_delta_I))
+    
                 sum1 = np.sum(local_delta_I*local_dIdx)
                 sum2 = np.sum(local_delta_I*local_dIdy)
                 #ABC only
+                
                 if mode == 'velocity_only':
                     A = np.sum((local_dIdx)**2)
                     B = np.sum(local_dIdx*local_dIdy)
