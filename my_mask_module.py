@@ -272,7 +272,7 @@ def gamma_maskpixel_fixed_colorbar_movie(all_gamma,filename = " Gamma_maskpixel_
         print("test")
         img_gamma = this_gamma_frame 
         print(np.max(img_gamma))
-        plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=np.min(all_gamma), vmax=np.max(all_gamma), origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
+        plt.imshow(img_gamma, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=-0.1, vmax=0.1, origin=None, extent=None, filternorm=1, filterrad=4.0, resample=None, url=None)
             #plt.colorbar(ax = plt.gca())
         animation_camera.snap()
     plt.colorbar()
