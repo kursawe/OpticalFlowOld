@@ -451,9 +451,9 @@ all_pixel_contraction_abs_contributions=my_dictionary['all_pixel_contraction_abs
 
 median_abs_all_pixel_relative_error = np.median(np.abs(all_pixel_relative_error))
 print(median_abs_all_pixel_relative_error)
-median_all_pixel_gamma_firstframe= np.median(all_pixel_gamma[0,:,:])
+median_all_pixel_gamma_firstframe= np.nanmedian(all_pixel_gamma[0,:,:])
 print(median_all_pixel_gamma_firstframe)#first frame remodeling
-median_all_pixel_gamma= np.median(all_pixel_gamma)# median all gamma all frames
+median_all_pixel_gamma= np.nanmedian(all_pixel_gamma)# median all gamma all frames,np.nanmedian in case the result is nan
 print(median_all_pixel_gamma)
 print(all_pixel_gamma[0,500,500])
 # =============================================================================
@@ -563,7 +563,43 @@ my_jitmask_module.Contraction_abs_contributions_Histogram_plot_maskpixel(all_pix
 my_jitmask_module.all_contraction_abs_contributions_fixed_colorbar_range1_movie_maskpixel(all_pixel_contraction_abs_contributions=all_pixel_contraction_abs_contributions,blurred_images=blurred_images, filename = "Contraction_abs_contributions_fixed_colorbar_range(-1,1)_maskpixel_boxsize21.mp4")
 
 
+#different sigma under boxsize=21_actin cutcells data
 
+plt.figure()
+sigma=[1,2,3,4,5,6,7,8,9]
+absmedian_allrelative_error = [0.5882451905755053,0.42280293586325124,0.31321280579956945,0.23994001145500704,0.19140091876300375,0.1584225735000862,0.1352664678703362,0.11841530601057865,0.10572841534577053]
+plt.title("Abs median all relative error with different boxsize")
+plt.xlabel("Boxsize")
+plt.ylabel("Abs median all relative error(mask pixel)")
+plt.savefig("Abs median all relative error with different boxsize_maskpixels.jpg")
+plt.show()
+
+plt.figure()
+sigma=[1,2,3,4,5,6,7,8,9]
+npnan_median_all_pixel_gamma_firstframe = [0,0,0,0,0,0,0,0,0.00061354942589516]#0=nan
+plt.title("Median remodeling on first frame with different boxsize")
+plt.xlabel("Boxsize")
+plt.ylabel("Median first frame remodeling(pixel)")
+plt.savefig("Median remodeling on first frame with different boxsize_pixels.jpg")
+plt.show()
+
+plt.figure()
+sigma=[1,2,3,4,5,6,7,8,9]
+npnan_median_all_pixel_gamma = [0,0,0,0,0,0,0,0,6.419258016525639e-10]#0=nan
+plt.title("Median remodeling on all frames with different boxsize")
+plt.xlabel("Boxsize")
+plt.ylabel("Median all frames remodeling(pixel)")
+plt.savefig("Median remodeling on all frames with different boxsize_pixels.jpg")
+plt.show()
+
+plt.figure()
+sigma=[1,2,3,4,5,6,7,8,9]
+median_specific_pixel_gamma = [-0.011032408108117458,-0.00997637396066775,-0.010084039156884746,-0.010259717699548681,-0.009998107208778455,-0.009193709537382922,-0.007987701463976303,-0.006667503749922374,-0.005445604089873982]
+plt.title("Median remodeling of[500,500] on first frame with different boxsize")
+plt.xlabel("Boxsize")
+plt.ylabel("Median remodeling of[500,500] on first frame")
+plt.savefig("Median remodeling of[500,500] on first frame with different boxsize_maskpixels.jpg")
+plt.show()
 
 
 #MASK Simulation
@@ -626,10 +662,36 @@ np.nonzero(all_pixel_v_y)
 np.nonzero(all_pixel_gamma)
 
 
+#np.nanmean()
+#median without nan of abs_Vx_error,abs_Vy_error,abs_gamma_error
+median_nonan_abs_Vx_error=np.nanmedian(abs_Vx_error)
+print(median_nonan_abs_Vx_error)
+median_nonan_abs_Vy_error=np.nanmedian(abs_Vy_error)
+print(median_nonan_abs_Vy_error)
+median_nonan_abs_gamma_error=np.nanmedian(abs_gamma_error)
+print(median_nonan_abs_gamma_error)
+#min without nan of abs_Vx_error,abs_Vy_error,abs_gamma_error
+min_nonan_abs_Vx_error=np.nanmin(abs_Vx_error)
+print(min_nonan_abs_Vx_error)
+min_nonan_abs_Vy_error=np.nanmin(abs_Vy_error)
+print(min_nonan_abs_Vy_error)
+min_nonan_abs_gamma_error=np.nanmin(abs_gamma_error)
+print(min_nonan_abs_gamma_error)
+
+plt.imshow(all_v_x[0])#plot frame1 all_v_x
+
+simulation_jitmask_module.abs_Vx_error_histogram_plot_maskpixel(abs_Vx_error=abs_Vx_error,filename ='Absolute Values of Vx Errors Histogram')
+simulation_jitmask_module.abs_Vy_error_histogram_plot_maskpixel(abs_Vy_error,filename ='Absolute Values of Vy Errors Histogram')
+simulation_jitmask_module.abs_gamma_error_histogram_plot_maskpixel(abs_gamma_error,filename ='Absolute Values of Gamma Errors Histogram')    
 simulation_jitmask_module.abs_Vx_error_fixed_colorbar_range1_movie_maskpixel(abs_Vx_error=abs_Vx_error,filename = "Abs_Vx_error_fixed_colorbar range(0,100)_maskpixel.mp4")
-
-#MASK:different sigma
-
+simulation_jitmask_module.abs_Vy_error_fixed_colorbar_range1_movie_maskpixel(abs_Vy_error=abs_Vy_error,filename = "Abs_Vy_error_fixed_colorbar range(0,10)_maskpixel.mp4")
+simulation_jitmask_module.abs_gamma_error_fixed_colorbar_range1_movie_maskpixel(abs_gamma_error=abs_gamma_error,filename = "Abs_Vy_error_fixed_colorbar range(0,10)_maskpixel.mp4")    
+   
+    
+#find max error location
+print(np.nonzero(np.logical_not(np.isnan(np.nanmax(abs_Vx_error[0])))))
+print(np.nonzero(np.logical_not(np.isnan(abs_Vx_error[0]))))
+print(np.nonzero(np.logical_not(np.isnan(all_v_x[0]))))
 
 
 
