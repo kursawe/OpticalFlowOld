@@ -128,7 +128,7 @@ def conduct_optical_flow(box_size = 10, all_images = skimage.io.imread('MB301110
 #                         sum4 = np.sum(local_dIdx*Vx)
 #                         sum5 = np.sum(local_dIdx*Vy)
 # =============================================================================
-                        this_gamma = ((B*E-C*D)*sum1+(B*C-A*E)*sum2+(A*D-B**2)*sum3)/this_sumde
+                        this_gamma = -((B*E-C*D)*sum1+(B*C-A*E)*sum2+(A*D-B**2)*sum3)/this_sumde#gamma add"-"20230206
                     v_x[pixel_index_x,pixel_index_y] = Vx
                     v_y[pixel_index_x,pixel_index_y] = Vy
                     gamma_[pixel_index_x,pixel_index_y] = this_gamma
